@@ -1,0 +1,397 @@
+# Native Rust deployment for Docker Compose or a Portainer Docker Standalone stack.
+# Set GITHUB_OWNER, create the host directories, and attach the external network.
+# See CONFIGURATION.md. A new database starts paused; configure or restore in the UI.
+# These examples do not create qBittorrent, a signature updater, NAS mounts or networks.
+services:
+  qbittorent-intake:
+    image: ghcr.io/${GITHUB_OWNER:?set GITHUB_OWNER to the image owner}/${GITHUB_REPOSITORY_NAME:-qbittorent-intake}:${IMAGE_TAG:-latest}
+    container_name: qbittorent-intake
+    user: "${INTAKE_UID:-10001}:${INTAKE_GID:-10001}"
+    init: true
+    restart: ${CONTAINER_RESTART_POLICY:-unless-stopped}
+    read_only: true
+    stop_grace_period: ${INTAKE_STOP_GRACE_PERIOD:-60s}
+    command: ["--host", "0.0.0.0", "--port", "8000"]
+    # All application overrides below are OPTIONAL and intentionally commented.
+    # Prefer Settings & Help or a restored settings.json. An active TI_* override
+    # wins over saved/restored settings, persists at startup, and locks its UI field.
+    # To force one value, uncomment environment: and ONLY that TI_* mapping; then
+    # set its value in Portainer's stack variables or the Compose host .env file.
+    # Do not uncomment this entire inventory. Leave unset optional strings absent.
+    # BEGIN GENERATED APPLICATION ENVIRONMENT
+    # environment:
+    #   # TI_APP_NAME | type: string | default: "torrent-intake"
+    #   # Accepted for compatibility with old settings files only; it has no effect. Use UI title to change the page heading.
+    #   TI_APP_NAME: ${TI_APP_NAME:?set TI_APP_NAME explicitly before enabling this override}
+    #   # TI_DEBUG | type: boolean | default: false
+    #   # Enables verbose application logging. Leave disabled for normal operation.
+    #   TI_DEBUG: ${TI_DEBUG:?set TI_DEBUG explicitly before enabling this override}
+    #   # TI_DATA_DIR | type: string | default: "/app/data"
+    #   # Bootstrap container directory containing SQLite, settings, and restore state. Keep its host mount on local SSD storage. Only TI_DATA_DIR in the container environment can relocate it.
+    #   TI_DATA_DIR: ${TI_DATA_DIR:?set TI_DATA_DIR explicitly before enabling this override}
+    #   # TI_DATABASE_URL | type: string | default: "sqlite:////app/data/torrent_intake.db"
+    #   # SQLite database containing jobs, checkpoints, migrations and scanner controls. Only a SQLite file inside TI_DATA_DIR is supported; other database engines are not available.
+    #   TI_DATABASE_URL: ${TI_DATABASE_URL:?set TI_DATABASE_URL explicitly before enabling this override}
+    #   # TI_QBT_HOST | type: string | default: "http://qbittorrent:8080"
+    #   # Private Web API endpoint reachable from Torrent Intake, for example http://qbittorrent:8080 on a shared Docker network. This is separate from the URL you open in your browser.
+    #   TI_QBT_HOST: ${TI_QBT_HOST:?set TI_QBT_HOST explicitly before enabling this override}
+    #   # TI_QBT_USERNAME | type: string | default: "admin"
+    #   # Account name used for authenticated qBittorrent API calls.
+    #   TI_QBT_USERNAME: ${TI_QBT_USERNAME:?set TI_QBT_USERNAME explicitly before enabling this override}
+    #   # TI_QBT_PASSWORD | type: string | default: "REPLACE_WITH_STRONG_PASSWORD"
+    #   # Password used for qBittorrent API authentication. The value is never returned to the UI.
+    #   TI_QBT_PASSWORD: ${TI_QBT_PASSWORD:?set TI_QBT_PASSWORD explicitly before enabling this override}
+    #   # TI_QBT_VERIFY_CERTIFICATE | type: boolean | default: false
+    #   # Validates the qBittorrent HTTPS certificate when TLS is used.
+    #   TI_QBT_VERIFY_CERTIFICATE: ${TI_QBT_VERIFY_CERTIFICATE:?set TI_QBT_VERIFY_CERTIFICATE explicitly before enabling this override}
+    #   # TI_QBT_REQUEST_TIMEOUT_SECONDS | type: nonnegative integer | default: 20
+    #   # Maximum wait for an individual qBittorrent API request, in seconds. Minimum: 1.
+    #   TI_QBT_REQUEST_TIMEOUT_SECONDS: ${TI_QBT_REQUEST_TIMEOUT_SECONDS:?set TI_QBT_REQUEST_TIMEOUT_SECONDS explicitly before enabling this override}
+    #   # TI_QBT_WEB_URL | type: optional string | default: unset
+    #   # Browser-safe link shown in the UI. This can differ from the private API URL used by the container.
+    #   TI_QBT_WEB_URL: ${TI_QBT_WEB_URL:?set TI_QBT_WEB_URL explicitly before enabling this override}
+    #   # TI_INTAKE_CATEGORY | type: string | default: "intake"
+    #   # qBittorrent category assigned while a torrent is managed by Intake.
+    #   TI_INTAKE_CATEGORY: ${TI_INTAKE_CATEGORY:?set TI_INTAKE_CATEGORY explicitly before enabling this override}
+    #   # TI_MANAGED_TAG | type: string | default: "torrent_intake"
+    #   # Required qBittorrent tag proving that a torrent remains under Torrent Intake control.
+    #   TI_MANAGED_TAG: ${TI_MANAGED_TAG:?set TI_MANAGED_TAG explicitly before enabling this override}
+    #   # TI_AUTO_CREATE_FINAL_CATEGORY | type: boolean | default: true
+    #   # Allows Torrent Intake to create a requested final qBittorrent category when it does not already exist.
+    #   TI_AUTO_CREATE_FINAL_CATEGORY: ${TI_AUTO_CREATE_FINAL_CATEGORY:?set TI_AUTO_CREATE_FINAL_CATEGORY explicitly before enabling this override}
+    #   # TI_LOCAL_STAGING_ROOT | type: string | default: "/staging-local"
+    #   # Exact container path used for locally staged torrents. qBittorrent must see the same content at the same path.
+    #   TI_LOCAL_STAGING_ROOT: ${TI_LOCAL_STAGING_ROOT:?set TI_LOCAL_STAGING_ROOT explicitly before enabling this override}
+    #   # TI_NAS_STAGING_ROOT | type: string | default: "/downloads/torrent-intake/staging"
+    #   # Legacy single NAS path, used only while the named NAS list is empty. Existing job choices stay pinned. qBittorrent must see identical container paths.
+    #   TI_NAS_STAGING_ROOT: ${TI_NAS_STAGING_ROOT:?set TI_NAS_STAGING_ROOT explicitly before enabling this override}
+    #   # TI_NAS_STAGING_LOCATIONS | type: JSON array | default: []
+    #   # Named temporary download locations mounted at the same paths in Intake and qBittorrent. A marker is an existing file on the NAS (absolute container path); Intake never creates it. Existing job paths cannot be removed while in use.
+    #   TI_NAS_STAGING_LOCATIONS: ${TI_NAS_STAGING_LOCATIONS:?set TI_NAS_STAGING_LOCATIONS explicitly before enabling this override}
+    #   # TI_DEFAULT_NAS_STAGING_ID | type: optional string | default: unset
+    #   # Exactly one named NAS used for new jobs and local overflow. Existing jobs retain their saved fallback. This does not select the final library destination.
+    #   TI_DEFAULT_NAS_STAGING_ID: ${TI_DEFAULT_NAS_STAGING_ID:?set TI_DEFAULT_NAS_STAGING_ID explicitly before enabling this override}
+    #   # TI_FINAL_PARENT_PREFIX | type: string | default: "/downloads"
+    #   # Primary canonical media boundary allowed for clean promotion destinations.
+    #   TI_FINAL_PARENT_PREFIX: ${TI_FINAL_PARENT_PREFIX:?set TI_FINAL_PARENT_PREFIX explicitly before enabling this override}
+    #   # TI_FINAL_PARENT_PREFIXES | type: optional string | default: unset
+    #   # Optional comma-separated canonical media boundaries allowed in addition to the primary final root.
+    #   TI_FINAL_PARENT_PREFIXES: ${TI_FINAL_PARENT_PREFIXES:?set TI_FINAL_PARENT_PREFIXES explicitly before enabling this override}
+    #   # TI_LOCAL_OVERFLOW_POLICY | type: string | default: "queue"
+    #   # Action taken when aggregate local staging capacity is unavailable for another torrent.
+    #   TI_LOCAL_OVERFLOW_POLICY: ${TI_LOCAL_OVERFLOW_POLICY:?set TI_LOCAL_OVERFLOW_POLICY explicitly before enabling this override}
+    #   # TI_LOCAL_MAX_GIB | type: nonnegative integer | default: 200
+    #   # A torrent larger than this GiB limit is directed to NAS staging instead of local staging. Minimum: 1.
+    #   TI_LOCAL_MAX_GIB: ${TI_LOCAL_MAX_GIB:?set TI_LOCAL_MAX_GIB explicitly before enabling this override}
+    #   # TI_LOCAL_FREE_SPACE_BUFFER_GIB | type: nonnegative integer | default: 5
+    #   # GiB kept unused when Torrent Intake calculates safe local staging capacity. Minimum: 0.
+    #   TI_LOCAL_FREE_SPACE_BUFFER_GIB: ${TI_LOCAL_FREE_SPACE_BUFFER_GIB:?set TI_LOCAL_FREE_SPACE_BUFFER_GIB explicitly before enabling this override}
+    #   # TI_POLLING_INTERVAL_SECONDS | type: nonnegative integer | default: 300
+    #   # How often the background reconciliation pass checks qBittorrent when no completion callback arrives. Minimum: 1.
+    #   TI_POLLING_INTERVAL_SECONDS: ${TI_POLLING_INTERVAL_SECONDS:?set TI_POLLING_INTERVAL_SECONDS explicitly before enabling this override}
+    #   # TI_COMPLETION_GRACE_SECONDS | type: nonnegative integer | default: 15
+    #   # Delay after a completion signal before Torrent Intake begins its final completion and pause checks. Minimum: 0.
+    #   TI_COMPLETION_GRACE_SECONDS: ${TI_COMPLETION_GRACE_SECONDS:?set TI_COMPLETION_GRACE_SECONDS explicitly before enabling this override}
+    #   # TI_COMPLETION_EVENT_TOKEN | type: optional string | default: unset
+    #   # Authenticates qBittorrent completion callbacks. The value is never returned to the UI.
+    #   TI_COMPLETION_EVENT_TOKEN: ${TI_COMPLETION_EVENT_TOKEN:?set TI_COMPLETION_EVENT_TOKEN explicitly before enabling this override}
+    #   # TI_SCANNER_BACKEND | type: string | default: "clamd"
+    #   # Compatibility selector: only clamd is supported. It may be omitted; there is no clamscan or alternate backend.
+    #   TI_SCANNER_BACKEND: ${TI_SCANNER_BACKEND:?set TI_SCANNER_BACKEND explicitly before enabling this override}
+    #   # TI_CLAMD_SOCKET_PATH | type: string | default: "/run/clamav/clamd.sock"
+    #   # Private Unix socket shared only with the Torrent Intake ClamD sidecar.
+    #   TI_CLAMD_SOCKET_PATH: ${TI_CLAMD_SOCKET_PATH:?set TI_CLAMD_SOCKET_PATH explicitly before enabling this override}
+    #   # TI_SCANNER_POLICY_VERSION | type: string | default: "clamav-policy-v5-media-attachments"
+    #   # Identity of the scan policy stored with checkpoints. Changing it invalidates incompatible clean checkpoints.
+    #   TI_SCANNER_POLICY_VERSION: ${TI_SCANNER_POLICY_VERSION:?set TI_SCANNER_POLICY_VERSION explicitly before enabling this override}
+    #   # TI_SCANNER_MAX_FILE_MIB | type: nonnegative integer | default: 2000
+    #   # Raw-size boundary for one native ClamD stream. Larger RAR/ZIP archives use member extraction; verified video and raw TrueHD use bounded windows. Eligible native size-limit failures use the same routes. Allowed: 1 through 2000.
+    #   TI_SCANNER_MAX_FILE_MIB: ${TI_SCANNER_MAX_FILE_MIB:?set TI_SCANNER_MAX_FILE_MIB explicitly before enabling this override}
+    #   # TI_SCANNER_HEALTH_CACHE_SECONDS | type: nonnegative integer | default: 15
+    #   # How long a successful ClamD health result may be reused, in seconds. Minimum: 1.
+    #   TI_SCANNER_HEALTH_CACHE_SECONDS: ${TI_SCANNER_HEALTH_CACHE_SECONDS:?set TI_SCANNER_HEALTH_CACHE_SECONDS explicitly before enabling this override}
+    #   # TI_SCANNER_CONNECT_TIMEOUT_SECONDS | type: nonnegative integer | default: 5
+    #   # Maximum time to establish a private socket connection, in seconds. Minimum: 1.
+    #   TI_SCANNER_CONNECT_TIMEOUT_SECONDS: ${TI_SCANNER_CONNECT_TIMEOUT_SECONDS:?set TI_SCANNER_CONNECT_TIMEOUT_SECONDS explicitly before enabling this override}
+    #   # TI_SCANNER_SCAN_TIMEOUT_SECONDS | type: nonnegative integer | default: 1200
+    #   # Maximum total client wait for one streamed file scan, in seconds. Minimum: 1.
+    #   TI_SCANNER_SCAN_TIMEOUT_SECONDS: ${TI_SCANNER_SCAN_TIMEOUT_SECONDS:?set TI_SCANNER_SCAN_TIMEOUT_SECONDS explicitly before enabling this override}
+    #   # TI_SCANNER_DEFINITIONS_WARN_HOURS | type: nonnegative integer | default: 36
+    #   # Definition age in hours at which the UI and events begin warning before scans are blocked. Minimum: 1.
+    #   TI_SCANNER_DEFINITIONS_WARN_HOURS: ${TI_SCANNER_DEFINITIONS_WARN_HOURS:?set TI_SCANNER_DEFINITIONS_WARN_HOURS explicitly before enabling this override}
+    #   # TI_SCANNER_DEFINITIONS_STALE_HOURS | type: nonnegative integer | default: 72
+    #   # Definition age in hours at which scanning fails closed until current definitions are available. Minimum: 1.
+    #   TI_SCANNER_DEFINITIONS_STALE_HOURS: ${TI_SCANNER_DEFINITIONS_STALE_HOURS:?set TI_SCANNER_DEFINITIONS_STALE_HOURS explicitly before enabling this override}
+    #   # TI_LARGE_MEDIA_ENABLED | type: boolean | default: true
+    #   # Routes oversized verified videos and narrowly validated raw TrueHD audio, plus eligible media whose native scan reaches a parser/expanded-data limit, through full-byte overlapping ClamD windows.
+    #   TI_LARGE_MEDIA_ENABLED: ${TI_LARGE_MEDIA_ENABLED:?set TI_LARGE_MEDIA_ENABLED explicitly before enabling this override}
+    #   # TI_LARGE_MEDIA_MAX_FILE_GIB | type: nonnegative integer | default: 100
+    #   # Hard GiB ceiling for the bounded large-media path. Larger individual files remain held without a clean verdict. Minimum: 1.
+    #   TI_LARGE_MEDIA_MAX_FILE_GIB: ${TI_LARGE_MEDIA_MAX_FILE_GIB:?set TI_LARGE_MEDIA_MAX_FILE_GIB explicitly before enabling this override}
+    #   # TI_LARGE_MEDIA_CHUNK_MIB | type: nonnegative integer | default: 512
+    #   # MiB sent in each independent ClamD window. It must remain below the native ClamD stream limit. Minimum: 1.
+    #   TI_LARGE_MEDIA_CHUNK_MIB: ${TI_LARGE_MEDIA_CHUNK_MIB:?set TI_LARGE_MEDIA_CHUNK_MIB explicitly before enabling this override}
+    #   # TI_LARGE_MEDIA_MIN_CHUNK_MIB | type: nonnegative integer | default: 64
+    #   # Smallest MiB window allowed for a raw stream/file size limit. Expansion, recursion, and unknown limits within a window remain blocked instead of being subdivided. Minimum: 1.
+    #   TI_LARGE_MEDIA_MIN_CHUNK_MIB: ${TI_LARGE_MEDIA_MIN_CHUNK_MIB:?set TI_LARGE_MEDIA_MIN_CHUNK_MIB explicitly before enabling this override}
+    #   # TI_LARGE_MEDIA_OVERLAP_KIB | type: nonnegative integer | default: 1024
+    #   # KiB repeated between neighboring windows to preserve short byte signatures at boundaries; this cannot preserve every signature or container parser context. Minimum: 0.
+    #   TI_LARGE_MEDIA_OVERLAP_KIB: ${TI_LARGE_MEDIA_OVERLAP_KIB:?set TI_LARGE_MEDIA_OVERLAP_KIB explicitly before enabling this override}
+    #   # TI_LARGE_MEDIA_PROBE_TIMEOUT_SECONDS | type: nonnegative integer | default: 120
+    #   # Maximum time allowed for ffprobe to verify the real container and stream layout of an oversized file. Minimum: 1.
+    #   TI_LARGE_MEDIA_PROBE_TIMEOUT_SECONDS: ${TI_LARGE_MEDIA_PROBE_TIMEOUT_SECONDS:?set TI_LARGE_MEDIA_PROBE_TIMEOUT_SECONDS explicitly before enabling this override}
+    #   # TI_LARGE_MEDIA_SCAN_TIMEOUT_SECONDS | type: nonnegative integer | default: 172800
+    #   # Total deadline for validating and reading every window of one oversized media file. Minimum: 1.
+    #   TI_LARGE_MEDIA_SCAN_TIMEOUT_SECONDS: ${TI_LARGE_MEDIA_SCAN_TIMEOUT_SECONDS:?set TI_LARGE_MEDIA_SCAN_TIMEOUT_SECONDS explicitly before enabling this override}
+    #   # TI_FFPROBE_BINARY | type: string | default: "/usr/bin/ffprobe"
+    #   # Image-provided ffprobe path used to validate oversized media. The Docker image installs it at build time.
+    #   TI_FFPROBE_BINARY: ${TI_FFPROBE_BINARY:?set TI_FFPROBE_BINARY explicitly before enabling this override}
+    #   # TI_FFMPEG_BINARY | type: string | default: "/usr/bin/ffmpeg"
+    #   # Image-provided tool for bounded attachment extraction. It does not transcode media files or unpack torrent archives.
+    #   TI_FFMPEG_BINARY: ${TI_FFMPEG_BINARY:?set TI_FFMPEG_BINARY explicitly before enabling this override}
+    #   # TI_MEDIA_ATTACHMENT_MAX_MIB | type: nonnegative integer | default: 16
+    #   # MiB allowed for one extracted attachment, between 1 and 64. Each attachment must complete a native ClamD scan; it is never chunked or skipped. Allowed: 1 through 64.
+    #   TI_MEDIA_ATTACHMENT_MAX_MIB: ${TI_MEDIA_ATTACHMENT_MAX_MIB:?set TI_MEDIA_ATTACHMENT_MAX_MIB explicitly before enabling this override}
+    #   # TI_MEDIA_ATTACHMENT_TOTAL_MIB | type: nonnegative integer | default: 64
+    #   # Maximum MiB extracted from one media file, at most 256. Cover images reserve their per-attachment maximum because their size is unknown before extraction. Allowed: 1 through 256.
+    #   TI_MEDIA_ATTACHMENT_TOTAL_MIB: ${TI_MEDIA_ATTACHMENT_TOTAL_MIB:?set TI_MEDIA_ATTACHMENT_TOTAL_MIB explicitly before enabling this override}
+    #   # TI_ARCHIVE_ENABLED | type: boolean | default: true
+    #   # Inspect oversized RAR/ZIP archives and eligible native size-limit failures using temporary extracted copies. Original archives and torrent folders are preserved.
+    #   TI_ARCHIVE_ENABLED: ${TI_ARCHIVE_ENABLED:?set TI_ARCHIVE_ENABLED explicitly before enabling this override}
+    #   # TI_ARCHIVE_SCRATCH_DIR | type: optional string | default: unset
+    #   # Existing container directory on local or NAS storage. Intake uses a private archive-scan subdirectory. Leave blank to use TI_DATA_DIR. Configure the matching writable Docker mount first; unavailable custom storage never falls back to the data disk.
+    #   TI_ARCHIVE_SCRATCH_DIR: ${TI_ARCHIVE_SCRATCH_DIR:?set TI_ARCHIVE_SCRATCH_DIR explicitly before enabling this override}
+    #   # TI_ARCHIVE_SCRATCH_MOUNT_MARKER | type: optional string | default: unset
+    #   # Optional absolute path to an existing readable marker file inside custom scratch storage. A missing marker blocks archive inspection; Intake never creates it. Leave blank to disable the marker check.
+    #   TI_ARCHIVE_SCRATCH_MOUNT_MARKER: ${TI_ARCHIVE_SCRATCH_MOUNT_MARKER:?set TI_ARCHIVE_SCRATCH_MOUNT_MARKER explicitly before enabling this override}
+    #   # TI_ARCHIVE_MAX_FILE_GIB | type: nonnegative integer | default: 100
+    #   # Maximum GiB for a source RAR/ZIP archive admitted to member scanning. Allowed: 1 through 1024.
+    #   TI_ARCHIVE_MAX_FILE_GIB: ${TI_ARCHIVE_MAX_FILE_GIB:?set TI_ARCHIVE_MAX_FILE_GIB explicitly before enabling this override}
+    #   # TI_ARCHIVE_MAX_EXPANDED_GIB | type: nonnegative integer | default: 20
+    #   # Maximum total GiB extracted per archive, including nested archive copies. Scratch files use the selected scratch filesystem and are removed after inspection. Allowed: 1 through 1024.
+    #   TI_ARCHIVE_MAX_EXPANDED_GIB: ${TI_ARCHIVE_MAX_EXPANDED_GIB:?set TI_ARCHIVE_MAX_EXPANDED_GIB explicitly before enabling this override}
+    #   # TI_ARCHIVE_MAX_FILES | type: nonnegative integer | default: 10000
+    #   # Total entries, including directories and nested archives, admitted during one archive inspection. Allowed: 1 through 100000.
+    #   TI_ARCHIVE_MAX_FILES: ${TI_ARCHIVE_MAX_FILES:?set TI_ARCHIVE_MAX_FILES explicitly before enabling this override}
+    #   # TI_ARCHIVE_MAX_DEPTH | type: nonnegative integer | default: 4
+    #   # Maximum RAR/ZIP nesting levels sharing the extraction budget; the outer archive is level one. Allowed: 1 through 8.
+    #   TI_ARCHIVE_MAX_DEPTH: ${TI_ARCHIVE_MAX_DEPTH:?set TI_ARCHIVE_MAX_DEPTH explicitly before enabling this override}
+    #   # TI_ARCHIVE_SCAN_TIMEOUT_SECONDS | type: nonnegative integer | default: 7200
+    #   # Total seconds allowed for extraction and all member scans of one archive. Allowed: 1 through 172800.
+    #   TI_ARCHIVE_SCAN_TIMEOUT_SECONDS: ${TI_ARCHIVE_SCAN_TIMEOUT_SECONDS:?set TI_ARCHIVE_SCAN_TIMEOUT_SECONDS explicitly before enabling this override}
+    #   # TI_ARCHIVE_FREE_SPACE_BUFFER_GIB | type: nonnegative integer | default: 1
+    #   # GiB kept free on the selected scratch filesystem while temporary members are extracted. Allowed: 1 through 1024.
+    #   TI_ARCHIVE_FREE_SPACE_BUFFER_GIB: ${TI_ARCHIVE_FREE_SPACE_BUFFER_GIB:?set TI_ARCHIVE_FREE_SPACE_BUFFER_GIB explicitly before enabling this override}
+    #   # TI_PER_JOB_SCAN_WORKERS | type: nonnegative integer | default: 1
+    #   # Maximum large-media byte ranges from one torrent that may be streamed to ClamD simultaneously. Allowed: 1 through 4.
+    #   TI_PER_JOB_SCAN_WORKERS: ${TI_PER_JOB_SCAN_WORKERS:?set TI_PER_JOB_SCAN_WORKERS explicitly before enabling this override}
+    #   # TI_CLAMD_MAX_INFLIGHT_REQUESTS | type: nonnegative integer | default: 4
+    #   # Hard application-wide limit for simultaneous ClamD INSTREAM requests across every active torrent. Keep it at or below ClamD MaxThreads. Allowed: 1 through 4.
+    #   TI_CLAMD_MAX_INFLIGHT_REQUESTS: ${TI_CLAMD_MAX_INFLIGHT_REQUESTS:?set TI_CLAMD_MAX_INFLIGHT_REQUESTS explicitly before enabling this override}
+    #   # TI_MAX_CONCURRENT_SCANS | type: nonnegative integer | default: 2
+    #   # Default torrent scan slots for a new queue and after a temporary boost ends. Existing slot requests are saved in SQLite. Minimum: 1.
+    #   TI_MAX_CONCURRENT_SCANS: ${TI_MAX_CONCURRENT_SCANS:?set TI_MAX_CONCURRENT_SCANS explicitly before enabling this override}
+    #   # TI_MAX_SCAN_SLOTS | type: nonnegative integer | default: 4
+    #   # Maximum slot count the runtime Scan Queue control is permitted to request. Minimum: 1.
+    #   TI_MAX_SCAN_SLOTS: ${TI_MAX_SCAN_SLOTS:?set TI_MAX_SCAN_SLOTS explicitly before enabling this override}
+    #   # TI_MAX_CONCURRENT_LARGE_SCANS | type: nonnegative integer | default: 1
+    #   # Maximum number of torrents above the large-job threshold that can scan at the same time. Minimum: 1.
+    #   TI_MAX_CONCURRENT_LARGE_SCANS: ${TI_MAX_CONCURRENT_LARGE_SCANS:?set TI_MAX_CONCURRENT_LARGE_SCANS explicitly before enabling this override}
+    #   # TI_LARGE_SCAN_GIB | type: nonnegative integer | default: 2
+    #   # Torrent size in GiB at which the separate large-scan concurrency bound applies. Minimum: 1.
+    #   TI_LARGE_SCAN_GIB: ${TI_LARGE_SCAN_GIB:?set TI_LARGE_SCAN_GIB explicitly before enabling this override}
+    #   # TI_SCAN_SCHEDULER_INTERVAL_SECONDS | type: nonnegative integer | default: 3
+    #   # Delay between scheduler attempts to claim pending scan work, in seconds. Minimum: 1.
+    #   TI_SCAN_SCHEDULER_INTERVAL_SECONDS: ${TI_SCAN_SCHEDULER_INTERVAL_SECONDS:?set TI_SCAN_SCHEDULER_INTERVAL_SECONDS explicitly before enabling this override}
+    #   # TI_SCAN_LEASE_SECONDS | type: nonnegative integer | default: 90
+    #   # Restart-recovery lease protecting an actively owned scan, in seconds. Minimum: 1.
+    #   TI_SCAN_LEASE_SECONDS: ${TI_SCAN_LEASE_SECONDS:?set TI_SCAN_LEASE_SECONDS explicitly before enabling this override}
+    #   # TI_SCAN_HEARTBEAT_SECONDS | type: nonnegative integer | default: 10
+    #   # How frequently an active worker refreshes its durable scan lease, in seconds. Minimum: 1.
+    #   TI_SCAN_HEARTBEAT_SECONDS: ${TI_SCAN_HEARTBEAT_SECONDS:?set TI_SCAN_HEARTBEAT_SECONDS explicitly before enabling this override}
+    #   # TI_SCAN_RETRY_BASE_SECONDS | type: nonnegative integer | default: 30
+    #   # Initial delay used by exponential retry after scanner failures, in seconds. Minimum: 1.
+    #   TI_SCAN_RETRY_BASE_SECONDS: ${TI_SCAN_RETRY_BASE_SECONDS:?set TI_SCAN_RETRY_BASE_SECONDS explicitly before enabling this override}
+    #   # TI_SCAN_MAX_FAILURES | type: nonnegative integer | default: 3
+    #   # Failure count after which a file/job requires explicit operator retry. Minimum: 1.
+    #   TI_SCAN_MAX_FAILURES: ${TI_SCAN_MAX_FAILURES:?set TI_SCAN_MAX_FAILURES explicitly before enabling this override}
+    #   # TI_SCAN_YIELD_AFTER_FILES | type: nonnegative integer | default: 10
+    #   # Number of successfully checkpointed files processed before a worker yields so other queued jobs can progress. Minimum: 1.
+    #   TI_SCAN_YIELD_AFTER_FILES: ${TI_SCAN_YIELD_AFTER_FILES:?set TI_SCAN_YIELD_AFTER_FILES explicitly before enabling this override}
+    #   # TI_PAUSE_CONFIRMATION_TIMEOUT_SECONDS | type: nonnegative integer | default: 30
+    #   # Maximum wait for qBittorrent to confirm a torrent is paused before scanning or a destructive action. Minimum: 1.
+    #   TI_PAUSE_CONFIRMATION_TIMEOUT_SECONDS: ${TI_PAUSE_CONFIRMATION_TIMEOUT_SECONDS:?set TI_PAUSE_CONFIRMATION_TIMEOUT_SECONDS explicitly before enabling this override}
+    #   # TI_INFECTED_ACTION | type: string | default: "hold"
+    #   # Action after a verified malware detection. This safety-critical value cannot be changed from the UI.
+    #   TI_INFECTED_ACTION: ${TI_INFECTED_ACTION:?set TI_INFECTED_ACTION explicitly before enabling this override}
+    #   # TI_QUARANTINE_ROOT | type: string | default: "/quarantine"
+    #   # Canonical quarantine boundary used only when the infected-content action is quarantine.
+    #   TI_QUARANTINE_ROOT: ${TI_QUARANTINE_ROOT:?set TI_QUARANTINE_ROOT explicitly before enabling this override}
+    #   # TI_EVENT_DIR | type: string | default: "/events"
+    #   # Writable spool where Torrent Intake atomically emits notifier events. It must be persistent.
+    #   TI_EVENT_DIR: ${TI_EVENT_DIR:?set TI_EVENT_DIR explicitly before enabling this override}
+    #   # TI_POST_PROMOTION_ENABLED | type: boolean | default: false
+    #   # Run the deployment-configured trusted script only after clean scanning, completed final promotion, delay and revalidation. No scripts are queued for historical completed jobs. Scripts have Intake's permissions, not a separate sandbox.
+    #   TI_POST_PROMOTION_ENABLED: ${TI_POST_PROMOTION_ENABLED:?set TI_POST_PROMOTION_ENABLED explicitly before enabling this override}
+    #   # TI_POST_PROMOTION_SCRIPT | type: optional string | default: unset
+    #   # Absolute executable path under /hooks, mounted read-only. Configure in Portainer or settings.json while stopped. Script files are NOT included in portable backups. Never point this at downloaded content.
+    #   TI_POST_PROMOTION_SCRIPT: ${TI_POST_PROMOTION_SCRIPT:?set TI_POST_PROMOTION_SCRIPT explicitly before enabling this override}
+    #   # TI_POST_PROMOTION_COPY_ENABLED | type: boolean | default: false
+    #   # Enable one-time copies for newly promoted torrents whose final parent matches an enabled copy rule. No match means no copy. Originals are retained and collisions are protected. Choose built-in copying OR a custom script; neither is a continuous folder sync.
+    #   TI_POST_PROMOTION_COPY_ENABLED: ${TI_POST_PROMOTION_COPY_ENABLED:?set TI_POST_PROMOTION_COPY_ENABLED explicitly before enabling this override}
+    #   # TI_POST_PROMOTION_COPY_DESTINATION | type: optional string | default: unset
+    #   # Retained for older settings and backups. This global destination is ignored for newly promoted jobs: configure Copy destination rules instead. Previously queued copies keep their pinned destination and layout.
+    #   TI_POST_PROMOTION_COPY_DESTINATION: ${TI_POST_PROMOTION_COPY_DESTINATION:?set TI_POST_PROMOTION_COPY_DESTINATION explicitly before enabling this override}
+    #   # TI_POST_PROMOTION_COPY_RULES | type: JSON array | default: []
+    #   # Map final-library source roots to existing destinations under /copy-target. The most specific enabled source containing the job's final parent wins; unmatched jobs are not copied. Disabled rules are ignored, so a broader enabled rule can still match. Relative folders are preserved, without a per-job wrapper. Queued jobs retain their saved rule. Maximum 32 rules.
+    #   TI_POST_PROMOTION_COPY_RULES: ${TI_POST_PROMOTION_COPY_RULES:?set TI_POST_PROMOTION_COPY_RULES explicitly before enabling this override}
+    #   # TI_POST_PROMOTION_DELAY_SECONDS | type: nonnegative integer | default: 5
+    #   # Minimum delay after verified promotion before checking again and copying or running the script; not a substitute for move verification. Allowed: 0 through 3600.
+    #   TI_POST_PROMOTION_DELAY_SECONDS: ${TI_POST_PROMOTION_DELAY_SECONDS:?set TI_POST_PROMOTION_DELAY_SECONDS explicitly before enabling this override}
+    #   # TI_POST_PROMOTION_TIMEOUT_SECONDS | type: nonnegative integer | default: 7200
+    #   # Maximum copy or script runtime, followed by a short shutdown grace period. A timeout does not rescan or move the promoted torrent again. Inspect partial copies before retrying. Allowed: 1 through 604800.
+    #   TI_POST_PROMOTION_TIMEOUT_SECONDS: ${TI_POST_PROMOTION_TIMEOUT_SECONDS:?set TI_POST_PROMOTION_TIMEOUT_SECONDS explicitly before enabling this override}
+    #   # TI_UI_TITLE | type: string | default: "Torrent Intake"
+    #   # Heading displayed at the top of the Torrent Intake interface.
+    #   TI_UI_TITLE: ${TI_UI_TITLE:?set TI_UI_TITLE explicitly before enabling this override}
+    # END GENERATED APPLICATION ENVIRONMENT
+    volumes:
+      # Local persistent state; host path must already exist and be writable.
+      - type: bind
+        source: ${TI_DATA_HOST_DIR:-/srv/torrent-intake/data}
+        target: /app/data
+        bind:
+          create_host_path: false
+      # qBittorrent must see the same source directory at the SAME container path.
+      - type: bind
+        source: ${TI_LOCAL_STAGING_HOST_DIR:-/srv/torrent-intake/staging}
+        target: /staging-local
+        bind:
+          create_host_path: false
+      - type: bind
+        source: ${TI_MEDIA_HOST_DIR:-/srv/torrent-intake/content}
+        target: /downloads
+        bind:
+          create_host_path: false
+      - type: bind
+        source: ${TI_EVENTS_HOST_DIR:-/srv/torrent-intake/events}
+        target: /events
+        bind:
+          create_host_path: false
+      - type: bind
+        source: ${TI_QUARANTINE_HOST_DIR:-/srv/torrent-intake/quarantine}
+        target: /quarantine
+        bind:
+          create_host_path: false
+      - type: bind
+        source: ${TI_CLAMD_SOCKET_HOST_DIR:-/srv/torrent-intake/socket}
+        target: /run/clamav
+        bind:
+          create_host_path: false
+      # OPTIONAL separate archive scratch. Mount the intended storage first;
+      # then enable this bind and configure /archive-scratch in Settings & Help.
+      # A marker is optional for scratch and must be created on the mounted storage.
+      # - type: bind
+      #   source: ${TI_ARCHIVE_SCRATCH_HOST_DIR:?set an existing scratch directory}
+      #   target: /archive-scratch
+      #   bind:
+      #     create_host_path: false
+      # OPTIONAL copy destination. Each rule destination requires an existing
+      # .intake-copy-mount marker. A missing host directory must never be created
+      # as a substitute for unavailable mounted storage.
+      # - type: bind
+      #   source: ${TI_COPY_TARGET_HOST_DIR:?set an existing mounted copy target}
+      #   target: /copy-target
+      #   bind:
+      #     create_host_path: false
+      # OPTIONAL trusted script directory; built-in copy rules need no scripts.
+      # Native compatibility wrapper: scripts/after-promotion-copy.sh.
+      # - type: bind
+      #   source: ${TI_HOOKS_HOST_DIR:?set an existing trusted hooks directory}
+      #   target: /hooks
+      #   read_only: true
+      #   bind:
+      #     create_host_path: false
+    tmpfs:
+      - /tmp:rw,nosuid,nodev,noexec,size=${INTAKE_TMPFS_SIZE:-256m},mode=1777
+    ports:
+      # Loopback by default. Provide controlled access through a tunnel/proxy.
+      - "${TI_UI_PUBLISH_IP:-127.0.0.1}:${TI_UI_HOST_PORT:-8095}:8000"
+    networks:
+      - intake_network
+    depends_on:
+      qbittorent-intake-clamd:
+        condition: service_healthy
+    cap_drop: [ALL]
+    security_opt: ["no-new-privileges:true"]
+    pids_limit: ${INTAKE_PIDS_LIMIT:-256}
+    mem_limit: ${INTAKE_MEMORY_LIMIT:-2g}
+    cpus: ${INTAKE_CPU_LIMIT:-2.0}
+    ulimits:
+      nofile:
+        soft: ${CONTAINER_NOFILE_SOFT:-4096}
+        hard: ${CONTAINER_NOFILE_HARD:-8192}
+    logging:
+      driver: json-file
+      options:
+        max-size: "${CONTAINER_LOG_MAX_SIZE:-10m}"
+        max-file: "${CONTAINER_LOG_MAX_FILES:-3}"
+
+  qbittorent-intake-clamd:
+    image: ghcr.io/${GITHUB_OWNER:?set GITHUB_OWNER to the image owner}/${GITHUB_REPOSITORY_NAME:-qbittorent-intake}-clamd:${IMAGE_TAG:-latest}
+    container_name: qbittorent-intake-clamd
+    user: "${INTAKE_UID:-10001}:${INTAKE_GID:-10001}"
+    init: true
+    restart: ${CONTAINER_RESTART_POLICY:-unless-stopped}
+    read_only: true
+    network_mode: none
+    environment:
+      # Nonnegative integer seconds; minimum effective value 1; default 1800.
+      # Startup wait for readable definitions from the external updater.
+      DEFINITIONS_WAIT_TIMEOUT: "${DEFINITIONS_WAIT_TIMEOUT:-1800}"
+      # Nonnegative integer seconds; minimum effective value 300; default 172800.
+      # Maximum daily-definition file age for sidecar startup and health checks.
+      DEFINITIONS_MAX_AGE_SECONDS: "${DEFINITIONS_MAX_AGE_SECONDS:-172800}"
+      # Integer MiB, 1..4000; default 2000. Parser/expanded-content work ceiling.
+      # Does not raise MaxFileSize or StreamMaxLength, both fixed at 2000 MiB.
+      CLAMD_MAX_SCAN_SIZE_MIB: "${CLAMD_MAX_SCAN_SIZE_MIB:-2000}"
+      # Optional compatibility path values; defaults already match the image.
+      # These affect supervisor checks, NOT the image-provided daemon config file.
+      # Keep standard paths unless also supplying a matching custom clamd.conf.
+      # DEFINITIONS_DIR: "${DEFINITIONS_DIR:-/var/lib/clamav}"
+      # CLAMD_SOCKET: "${CLAMD_SOCKET:-/run/clamav/clamd.sock}"
+    volumes:
+      - type: bind
+        source: ${CLAMAV_DEFS_HOST_DIR:-/srv/torrent-intake/definitions}
+        target: /var/lib/clamav
+        read_only: true
+        bind:
+          create_host_path: false
+      - type: bind
+        source: ${TI_CLAMD_SOCKET_HOST_DIR:-/srv/torrent-intake/socket}
+        target: /run/clamav
+        bind:
+          create_host_path: false
+    tmpfs:
+      # ClamD stages INSTREAM bytes here, in addition to parser working files.
+      # A tmpfs size is a limit; populated pages count toward container memory.
+      - /tmp:rw,nosuid,nodev,noexec,size=${CLAMD_TMPFS_SIZE:-4g},mode=1777
+    cap_drop: [ALL]
+    security_opt: ["no-new-privileges:true"]
+    pids_limit: ${CLAMD_PIDS_LIMIT:-128}
+    mem_limit: ${CLAMD_MEMORY_LIMIT:-8g}
+    cpus: ${CLAMD_CPU_LIMIT:-4.0}
+    ulimits:
+      nofile:
+        soft: ${CONTAINER_NOFILE_SOFT:-4096}
+        hard: ${CONTAINER_NOFILE_HARD:-8192}
+    logging:
+      driver: json-file
+      options:
+        max-size: "${CONTAINER_LOG_MAX_SIZE:-10m}"
+        max-file: "${CONTAINER_LOG_MAX_FILES:-3}"
+
+networks:
+  intake_network:
+    name: ${MEDIA_NETWORK:-intake_network}
+    external: true

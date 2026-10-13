@@ -1,0 +1,40 @@
+# Local settings, credentials, keys, and deployment state
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*.p12
+*.pfx
+/data/
+/logs/
+/settings.json
+/admin-token
+/deployment-notes.txt
+/before-restore-*/
+/.backup-*/
+/.restore-*/
+*.tibak
+*.db
+*.db-*
+*.sqlite
+*.sqlite-*
+*.sqlite3
+*.sqlite3-*
+*.log
+
+# Build and local tool output; Cargo.lock belongs in this application repository.
+/target/
+/dist/
+/node_modules/
+__pycache__/
+.venv/
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+
+# Public synthetic compatibility fixtures, never actual deployment backups.
+!/tests/fixtures/python-backup-vector.tibak
+!/tests/fixtures/python-legacy-backup.tibak
+!/tests/fixtures/python-current-upstream-backup.tibak

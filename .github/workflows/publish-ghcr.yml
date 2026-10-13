@@ -1,0 +1,186 @@
+name: Validate and publish native images
+
+on:
+  push:
+    branches: [main]
+    tags: ['v*.*.*']
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: native-release-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+env:
+  CARGO_TERM_COLOR: always
+  RUST_BACKTRACE: '1'
+
+jobs:
+  validate:
+    name: Rust 1.90 / ${{ matrix.runner }}
+    strategy:
+      fail-fast: false
+      matrix:
+        runner: [ubuntu-24.04, ubuntu-24.04-arm, macos-14]
+    runs-on: ${{ matrix.runner }}
+    timeout-minutes: 60
+    steps:
+      - name: Checkout
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+        with:
+          persist-credentials: false
+      - name: Install minimum supported Rust toolchain
+        run: |
+          rustup toolchain install 1.90.0 --profile minimal --component rustfmt --component clippy
+          rustup default 1.90.0
+      - name: Check formatting and lints
+        run: |
+          cargo fmt --check
+          cargo clippy --all-targets --locked -- -D warnings
+      - name: Run Rust tests
+        run: cargo test --locked
+      - name: Test real scanner and qBittorrent integrations
+        if: runner.os == 'Linux'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y ffmpeg libarchive13t64 clamav-daemon qbittorrent-nox
+          sh scripts/scanner-integration.sh
+          cargo test --locked --offline --test qbt_integration -- --ignored --nocapture
+
+  images:
+    name: Native containers / ${{ matrix.runner }}
+    strategy:
+      fail-fast: false
+      matrix:
+        runner: [ubuntu-24.04, ubuntu-24.04-arm]
+    runs-on: ${{ matrix.runner }}
+    timeout-minutes: 90
+    steps:
+      - name: Checkout
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+        with:
+          persist-credentials: false
+      - name: Check JavaScript and deployment examples
+        env:
+          GITHUB_OWNER: example
+          GITHUB_REPOSITORY_NAME: qbittorent-intake
+        run: |
+          node --check templates/settings.js
+          node --check tests/test_settings_ui.cjs
+          node --check tests/test_upload_ui.cjs
+          docker compose -f docker-compose.example.yml config --quiet
+          docker compose -f portainer-stack.example.yml config --quiet
+      - name: Build runtime images on native hardware
+        run: |
+          docker build --tag qbittorent-intake:test .
+          docker build --file Dockerfile.clamd --tag qbittorent-intake-clamd:test .
+      - name: Check runtime identity and installed helpers
+        run: |
+          test "$(docker run --rm --entrypoint id qbittorent-intake:test -u)" = 10001
+          test "$(docker run --rm --entrypoint id qbittorent-intake-clamd:test -u)" = 10001
+          docker run --rm --entrypoint ffprobe qbittorent-intake:test -version
+          docker run --rm --entrypoint clamd qbittorent-intake-clamd:test --version
+          docker run --rm --entrypoint sh qbittorent-intake:test -ec \
+            'test -x /usr/local/bin/after-promotion-copy; ! command -v python; ! command -v python3'
+          docker run --rm --entrypoint sh qbittorent-intake-clamd:test -ec \
+            'test -x /usr/local/bin/clamd-sidecar; ! command -v python; ! command -v python3'
+          for image in qbittorent-intake:test qbittorent-intake-clamd:test; do
+            docker run --rm --entrypoint sh "$image" -ec '
+              for notice in LICENSE NOTICE THIRD_PARTY_LICENSES.txt rust-standard-library-COPYRIGHT.html; do
+                test -s "/usr/share/doc/torrent-intake/$notice"
+              done'
+          done
+      - name: Check startup with a read-only filesystem and dropped capabilities
+        run: |
+          container=$(docker run -d --read-only --cap-drop ALL \
+            --security-opt no-new-privileges:true \
+            --tmpfs /tmp:rw,nosuid,nodev,noexec,size=64m,mode=1777 \
+            --tmpfs /app/data:rw,nosuid,nodev,noexec,size=64m,uid=10001,gid=10001,mode=0750 \
+            -p 127.0.0.1::8000 qbittorent-intake:test)
+          trap 'docker logs "$container"; docker rm -f "$container"' EXIT
+          port=$(docker port "$container" 8000/tcp | cut -d: -f2)
+          for attempt in $(seq 1 30); do
+            if curl --fail --silent --max-time 2 "http://127.0.0.1:$port/controller/status"; then
+              exit 0
+            fi
+            sleep 1
+          done
+          exit 1
+      - name: Test desktop and mobile UI against the native image
+        if: matrix.runner == 'ubuntu-24.04'
+        env:
+          PUPPETEER_SKIP_DOWNLOAD: 'true'
+          CHROME_PATH: /usr/bin/google-chrome
+          TI_UI_TEST_IMAGE: qbittorent-intake:test
+        run: |
+          npm install --prefix "${RUNNER_TEMP}/ti-browser-tests" --no-save --package-lock=false puppeteer@24.43.1
+          export NODE_PATH="${RUNNER_TEMP}/ti-browser-tests/node_modules"
+          node tests/test_settings_ui.cjs
+          node tests/test_upload_ui.cjs
+
+  publish:
+    # A manual run validates only. PR code never receives package-write access.
+    if: github.event_name == 'push' && (github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/v'))
+    needs: [validate, images]
+    runs-on: ubuntu-24.04
+    timeout-minutes: 120
+    permissions:
+      contents: read
+      packages: write
+    strategy:
+      matrix:
+        include:
+          - suffix: ''
+            dockerfile: Dockerfile
+          - suffix: '-clamd'
+            dockerfile: Dockerfile.clamd
+    steps:
+      - name: Checkout
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+        with:
+          persist-credentials: false
+      - name: Derive lowercase image name from this repository
+        id: image
+        env:
+          REPOSITORY: ${{ github.repository }}
+          IMAGE_SUFFIX: ${{ matrix.suffix }}
+        run: |
+          repository=$(printf '%s' "$REPOSITORY" | tr '[:upper:]' '[:lower:]')
+          printf 'name=ghcr.io/%s%s\n' "$repository" "$IMAGE_SUFFIX" >> "$GITHUB_OUTPUT"
+      - name: Set up QEMU for multi-platform publication
+        uses: docker/setup-qemu-action@c7c53464625b32c7a7e944ae62b3e17d2b600130 # v3.7.0
+      - name: Set up Buildx
+        uses: docker/setup-buildx-action@8d2750c68a42422c14e847fe6c8ac0403b4cbd6f # v3.12.0
+      - name: Log in to GHCR
+        uses: docker/login-action@c94ce9fb468520275223c153574b00df6fe4bcc9 # v3.7.0
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - name: Generate image tags and labels
+        id: meta
+        uses: docker/metadata-action@c299e40c65443455700f0fdfc63efafe5b349051 # v5.10.0
+        with:
+          images: ${{ steps.image.outputs.name }}
+          # Disable implicit latest on semver: only a successful main build moves latest.
+          flavor: latest=false
+          tags: |
+            type=raw,value=latest,enable=${{ github.ref == 'refs/heads/main' }}
+            type=semver,pattern={{version}}
+            type=sha,format=long
+      - name: Publish amd64 and arm64 images
+        uses: docker/build-push-action@10e90e3645eae34f1e60eeb005ba3a3d33f178e8 # v6.19.2
+        with:
+          context: .
+          file: ${{ matrix.dockerfile }}
+          platforms: linux/amd64,linux/arm64
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          provenance: mode=max
+          sbom: true
+          cache-from: type=gha,scope=native${{ matrix.suffix }}
+          cache-to: type=gha,mode=max,scope=native${{ matrix.suffix }}

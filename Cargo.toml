@@ -1,0 +1,56 @@
+[package]
+name = "torrent-intake"
+version = "0.1.0"
+edition = "2021"
+rust-version = "1.90"
+description = "An explained Rust implementation of the qBittorrent intake controller"
+license = "MIT"
+publish = false
+
+[dependencies]
+anyhow = "1"
+aes = "0.8"
+ctr = "0.9"
+ghash = "0.5"
+axum = { version = "0.8", features = ["multipart"] }
+base64 = "0.22"
+chrono = { version = "0.4", features = ["serde"] }
+crc32fast = "1"
+dotenvy = "0.15"
+fs2 = "0.4"
+futures-util = { version = "0.3", default-features = false, features = ["std"] }
+hex = "0.4"
+http-body-util = "0.1"
+libc = "0.2"
+libloading = "0.8"
+minijinja = { version = "2", features = ["json"] }
+rand = "0.8"
+reqwest = { version = "0.12", default-features = false, features = ["blocking", "json", "multipart", "cookies", "rustls-tls"] }
+# Bundled SQLite must include the WAL-reset fix (3.51.3 or newer).
+# We do not use prepared-statement caching or a WebAssembly SQLite backend.
+rusqlite = { version = "0.40.2", default-features = false, features = ["bundled", "backup", "hooks", "fallible_uint"] }
+scrypt = "0.11"
+serde = { version = "1", features = ["derive"] }
+serde_json = { version = "1", features = ["preserve_order"] }
+sha1 = "0.10"
+sha2 = "0.10"
+subtle = "2"
+tempfile = "3"
+thiserror = "2"
+tokio = { version = "1", features = ["rt-multi-thread", "macros", "net", "signal", "sync", "time", "fs", "io-util"] }
+tracing = "0.1"
+tracing-subscriber = { version = "0.3", features = ["env-filter"] }
+url = "2"
+uuid = { version = "1", features = ["v4", "serde"] }
+walkdir = "2"
+zip = { version = "2", default-features = false }
+
+[dev-dependencies]
+# Independent crypto reference and in-process HTTP service test helpers.
+aes-gcm = "0.10"
+tower = { version = "0.5", features = ["util"] }
+
+[profile.release]
+lto = "thin"
+strip = true
+

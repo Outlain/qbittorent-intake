@@ -1,0 +1,1260 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "Torrent Intake Rust API",
+    "version": "0.1.0",
+    "description": "Compatibility routes for the Rust controller. Configuration and lifecycle rules are explained in rust/docs. Normal job routes require private-network protection; administration requires the local token."
+  },
+  "paths": {
+    "/controller/status": {
+      "get": {
+        "summary": "Controller status",
+        "operationId": "controller_status",
+        "responses": {
+          "200": {
+            "description": "Successful operation"
+          },
+          "422": {
+            "description": "Invalid request"
+          },
+          "409": {
+            "description": "Operation conflicts with the current controller or job state"
+          }
+        }
+      }
+    },
+    "/admin/status": {
+      "get": {
+        "summary": "Admin status",
+        "operationId": "admin_status",
+        "responses": {
+          "200": {
+            "description": "Successful operation"
+          },
+          "422": {
+            "description": "Invalid request"
+          },
+          "409": {
+            "description": "Operation conflicts with the current controller or job state"
+          }
+        },
+        "security": [
+          {
+            "AdminToken": []
+          }
+        ]
+      }
+    },
+    "/admin/settings/review": {
+      "post": {
+        "summary": "Review local settings",
+        "operationId": "review_local_settings",
+        "responses": {
+          "200": {
+            "description": "Successful operation"
+          },
+          "422": {
+            "description": "Invalid request"
+          },
+          "409": {
+            "description": "Operation conflicts with the current controller or job state"
+          }
+        },
+        "security": [
+          {
+            "AdminToken": []
+          }
+        ],
+        "requestBody": {
+          "required": false,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "additionalProperties": true
+              }
+            }
+          }
+        }
+      }
+    },
+    "/admin/test-connection": {
+      "post": {
+        "summary": "Test qbt connection",
+        "operationId": "test_qbt_connection",
+        "responses": {
+          "200": {
+            "description": "Successful operation"
+          },
+          "422": {
+            "description": "Invalid request"
+          },
+          "409": {
+            "description": "Operation conflicts with the current controller or job state"
+          }
+        },
+        "security": [
+          {
+            "AdminToken": []
+          }
+        ],
+        "requestBody": {
+          "required": false,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "additionalProperties": true
+              }
+            }
+          }
+        }
+      }
+    },
+    "/admin/checks": {
+      "post": {
+        "summary": "Check setup",
+        "operationId": "check_setup",
+        "responses": {
+          "200": {
+            "description": "Successful operation"
+          },
+          "422": {
+            "description": "Invalid request"
+          },
+          "409": {
+            "description": "Operation conflicts with the current controller or job state"
+          }
+        },
+        "security": [
+          {
+            "AdminToken": []
+          }
+        ],
+        "requestBody": {
+          "required": false,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "additionalProperties": true
+              }
+            }
+          }
+        }
+      }
+    },
+    "/admin/pause": {
+      "post": {
+        "summary": "Pause controller",
+        "operationId": "pause_controller",
+        "responses": {
+          "200": {
+            "description": "Successful operation"
+          },
+          "422": {
+            "description": "Invalid request"
+          },
+          "409": {
+            "description": "Operation conflicts with the current controller or job state"
+          }
+        },
+        "security": [
+          {
+            "AdminToken": []
+          }
+        ],
+        "requestBody": {
+          "required": false,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "additionalProperties": true
+              }
+            }
+          }
+        }
+      }
+    },
+    "/admin/resume": {
+      "post": {
+        "summary": "Resume controller",
+        "operationId": "resume_controller",
+        "responses": {
+          "200": {
+            "description": "Successful operation"
+          },
+          "422": {
+            "description": "Invalid request"
+          },
+          "409": {
+            "description": "Operation conflicts with the current controller or job state"
+          }
+        },
+        "security": [
+          {
+            "AdminToken": []
+          }
+        ],
+        "requestBody": {
+          "required": false,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "additionalProperties": true
+              }
+            }
+          }
+        }
+      }
+    },
+    "/admin/settings": {
+      "post": {
+        "summary": "Save local settings",
+        "operationId": "save_local_settings",
+        "responses": {
+          "200": {
+            "description": "Successful operation"
+          },
+          "422": {
+            "description": "Invalid request"
+          },
+          "409": {
+            "description": "Operation conflicts with the current controller or job state"
+          }
+        },
+        "security": [
+          {
+            "AdminToken": []
+          }
+        ],
+        "requestBody": {
+          "required": false,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "additionalProperties": true
+              }
+            }
+          }
+        }
+      }
+    },
+    "/admin/jobs/{job_id}/retry-hook": {
+      "post": {
+        "summary": "Retry promotion hook",
+        "operationId": "retry_promotion_hook",
+        "responses": {
+          "200": {
+            "description": "Successful operation"
+          },
+          "422": {
+            "description": "Invalid request"
+          },
+          "409": {
+            "description": "Operation conflicts with the current controller or job state"
+          }
+        },
+        "parameters": [
+          {
+            "name": "job_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "security": [
+          {
+            "AdminToken": []
+          }
+        ],
+        "requestBody": {
+          "required": false,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "additionalProperties": true
+              }
+            }
+          }
+        }
+      }
+    },
+    "/admin/jobs/{job_id}/cancel-copy": {
+      "post": {
+        "summary": "Cancel promotion copy",
+        "operationId": "cancel_promotion_copy",
+        "responses": {
+          "200": {
+            "description": "Successful operation"
+          },
+          "422": {
+            "description": "Invalid request"
+          },
+          "409": {
+            "description": "Operation conflicts with the current controller or job state"
+          }
+        },
+        "parameters": [
+          {
+            "name": "job_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "security": [
+          {
+            "AdminToken": []
+          }
+        ],
+        "requestBody": {
+          "required": false,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "additionalProperties": true
+              }
+            }
+          }
+        }
+      }
+    },
+    "/admin/deployment-notes": {
+      "post": {
+        "summary": "Save deployment notes",
+        "operationId": "save_deployment_notes",
+        "responses": {
+          "200": {
+            "description": "Successful operation"
+          },
+          "422": {
+            "description": "Invalid request"
+          },
+          "409": {
+            "description": "Operation conflicts with the current controller or job state"
+          }
+        },
+        "security": [
+          {
+            "AdminToken": []
+          }
+        ],
+        "requestBody": {
+          "required": false,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "additionalProperties": true
+              }
+            }
+          }
+        }
+      }
+    },
+    "/admin/backup": {
+      "post": {
+        "summary": "Download backup",
+        "operationId": "download_backup",
+        "responses": {
+          "200": {
+            "description": "Successful operation"
+          },
+          "422": {
+            "description": "Invalid request"
+          },
+          "409": {
+            "description": "Operation conflicts with the current controller or job state"
+          }
+        },
+        "security": [
+          {
+            "AdminToken": []
+          }
+        ],
+        "requestBody": {
+          "required": false,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "additionalProperties": true
+              }
+            }
+          }
+        }
+      }
+    },
+    "/admin/restore": {
+      "post": {
+        "summary": "Upload backup",
+        "operationId": "upload_backup",
+        "responses": {
+          "200": {
+            "description": "Successful operation"
+          },
+          "422": {
+            "description": "Invalid request"
+          },
+          "409": {
+            "description": "Operation conflicts with the current controller or job state"
+          }
+        },
+        "security": [
+          {
+            "AdminToken": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/octet-stream": {
+              "schema": {
+                "type": "string",
+                "format": "binary"
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "X-TI-Confirm-Restore",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "const": "replace-after-restart"
+            }
+          },
+          {
+            "name": "X-TI-Backup-Passphrase",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Base64-encoded UTF-8 passphrase"
+          }
+        ]
+      }
+    },
+    "/": {
+      "get": {
+        "summary": "Root",
+        "operationId": "root",
+        "responses": {
+          "200": {
+            "description": "Successful operation"
+          },
+          "422": {
+            "description": "Invalid request"
+          },
+          "409": {
+            "description": "Operation conflicts with the current controller or job state"
+          }
+        }
+      }
+    },
+    "/health": {
+      "get": {
+        "summary": "Health",
+        "operationId": "health",
+        "responses": {
+          "200": {
+            "description": "Successful operation"
+          },
+          "422": {
+            "description": "Invalid request"
+          },
+          "409": {
+            "description": "Operation conflicts with the current controller or job state"
+          }
+        }
+      }
+    },
+    "/jobs": {
+      "get": {
+        "summary": "List jobs",
+        "operationId": "list_jobs",
+        "responses": {
+          "200": {
+            "description": "Successful operation"
+          },
+          "422": {
+            "description": "Invalid request"
+          },
+          "409": {
+            "description": "Operation conflicts with the current controller or job state"
+          }
+        }
+      },
+      "post": {
+        "summary": "Create job",
+        "operationId": "create_job",
+        "responses": {
+          "200": {
+            "description": "Successful operation"
+          },
+          "422": {
+            "description": "Invalid request"
+          },
+          "409": {
+            "description": "Operation conflicts with the current controller or job state"
+          }
+        },
+        "requestBody": {
+          "required": false,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/JobCreate"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/jobs/bulk": {
+      "post": {
+        "summary": "Create jobs bulk",
+        "operationId": "create_jobs_bulk",
+        "responses": {
+          "200": {
+            "description": "Successful operation"
+          },
+          "422": {
+            "description": "Invalid request"
+          },
+          "409": {
+            "description": "Operation conflicts with the current controller or job state"
+          }
+        },
+        "requestBody": {
+          "required": false,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "additionalProperties": true
+              }
+            }
+          }
+        }
+      }
+    },
+    "/jobs/torrent": {
+      "post": {
+        "summary": "Create job from torrent",
+        "operationId": "create_job_from_torrent",
+        "responses": {
+          "200": {
+            "description": "Successful operation"
+          },
+          "422": {
+            "description": "Invalid request"
+          },
+          "409": {
+            "description": "Operation conflicts with the current controller or job state"
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "file",
+                  "settings"
+                ],
+                "properties": {
+                  "file": {
+                    "type": "string",
+                    "format": "binary",
+                    "description": "Original .torrent metadata, at most 32 MiB"
+                  },
+                  "settings": {
+                    "type": "string",
+                    "description": "JSON JobOptions object"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/jobs/{job_id}": {
+      "get": {
+        "summary": "Get job",
+        "operationId": "get_job",
+        "responses": {
+          "200": {
+            "description": "Successful operation"
+          },
+          "422": {
+            "description": "Invalid request"
+          },
+          "409": {
+            "description": "Operation conflicts with the current controller or job state"
+          }
+        },
+        "parameters": [
+          {
+            "name": "job_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ]
+      },
+      "delete": {
+        "summary": "Delete job",
+        "operationId": "delete_job",
+        "responses": {
+          "200": {
+            "description": "Successful operation"
+          },
+          "422": {
+            "description": "Invalid request"
+          },
+          "409": {
+            "description": "Operation conflicts with the current controller or job state"
+          }
+        },
+        "parameters": [
+          {
+            "name": "job_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ]
+      }
+    },
+    "/jobs/{job_id}/retry": {
+      "post": {
+        "summary": "Retry job",
+        "operationId": "retry_job",
+        "responses": {
+          "200": {
+            "description": "Successful operation"
+          },
+          "422": {
+            "description": "Invalid request"
+          },
+          "409": {
+            "description": "Operation conflicts with the current controller or job state"
+          }
+        },
+        "parameters": [
+          {
+            "name": "job_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": false,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "additionalProperties": true
+              }
+            }
+          }
+        }
+      }
+    },
+    "/jobs/{job_id}/final-destination": {
+      "patch": {
+        "summary": "Update final destination",
+        "operationId": "update_final_destination",
+        "responses": {
+          "200": {
+            "description": "Successful operation"
+          },
+          "422": {
+            "description": "Invalid request"
+          },
+          "409": {
+            "description": "Operation conflicts with the current controller or job state"
+          }
+        },
+        "parameters": [
+          {
+            "name": "job_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": false,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "additionalProperties": true
+              }
+            }
+          }
+        }
+      }
+    },
+    "/jobs/bulk-retry": {
+      "post": {
+        "summary": "Bulk retry jobs",
+        "operationId": "bulk_retry_jobs",
+        "responses": {
+          "200": {
+            "description": "Successful operation"
+          },
+          "422": {
+            "description": "Invalid request"
+          },
+          "409": {
+            "description": "Operation conflicts with the current controller or job state"
+          }
+        },
+        "requestBody": {
+          "required": false,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "additionalProperties": true
+              }
+            }
+          }
+        }
+      }
+    },
+    "/jobs/bulk-scan-next": {
+      "post": {
+        "summary": "Bulk prioritize scans",
+        "operationId": "bulk_prioritize_scans",
+        "responses": {
+          "200": {
+            "description": "Successful operation"
+          },
+          "422": {
+            "description": "Invalid request"
+          },
+          "409": {
+            "description": "Operation conflicts with the current controller or job state"
+          }
+        },
+        "requestBody": {
+          "required": false,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "additionalProperties": true
+              }
+            }
+          }
+        }
+      }
+    },
+    "/jobs/bulk-scan-pause": {
+      "post": {
+        "summary": "Bulk pause scans",
+        "operationId": "bulk_pause_scans",
+        "responses": {
+          "200": {
+            "description": "Successful operation"
+          },
+          "422": {
+            "description": "Invalid request"
+          },
+          "409": {
+            "description": "Operation conflicts with the current controller or job state"
+          }
+        },
+        "requestBody": {
+          "required": false,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "additionalProperties": true
+              }
+            }
+          }
+        }
+      }
+    },
+    "/jobs/bulk-scan-resume": {
+      "post": {
+        "summary": "Bulk resume scans",
+        "operationId": "bulk_resume_scans",
+        "responses": {
+          "200": {
+            "description": "Successful operation"
+          },
+          "422": {
+            "description": "Invalid request"
+          },
+          "409": {
+            "description": "Operation conflicts with the current controller or job state"
+          }
+        },
+        "requestBody": {
+          "required": false,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "additionalProperties": true
+              }
+            }
+          }
+        }
+      }
+    },
+    "/jobs/bulk-move-to-nas": {
+      "post": {
+        "summary": "Bulk move waiting jobs to nas",
+        "operationId": "bulk_move_waiting_jobs_to_nas",
+        "responses": {
+          "200": {
+            "description": "Successful operation"
+          },
+          "422": {
+            "description": "Invalid request"
+          },
+          "409": {
+            "description": "Operation conflicts with the current controller or job state"
+          }
+        },
+        "requestBody": {
+          "required": false,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "additionalProperties": true
+              }
+            }
+          }
+        }
+      }
+    },
+    "/qbt/categories": {
+      "get": {
+        "summary": "Qbt categories",
+        "operationId": "qbt_categories",
+        "responses": {
+          "200": {
+            "description": "Successful operation"
+          },
+          "422": {
+            "description": "Invalid request"
+          },
+          "409": {
+            "description": "Operation conflicts with the current controller or job state"
+          }
+        }
+      }
+    },
+    "/qbt/tags": {
+      "get": {
+        "summary": "Qbt tags",
+        "operationId": "qbt_tags",
+        "responses": {
+          "200": {
+            "description": "Successful operation"
+          },
+          "422": {
+            "description": "Invalid request"
+          },
+          "409": {
+            "description": "Operation conflicts with the current controller or job state"
+          }
+        }
+      }
+    },
+    "/qbt/final-path-suggestions": {
+      "get": {
+        "summary": "Qbt final path suggestions",
+        "operationId": "qbt_final_path_suggestions",
+        "responses": {
+          "200": {
+            "description": "Successful operation"
+          },
+          "422": {
+            "description": "Invalid request"
+          },
+          "409": {
+            "description": "Operation conflicts with the current controller or job state"
+          }
+        }
+      }
+    },
+    "/qbt/transfer": {
+      "get": {
+        "summary": "Qbt transfer info",
+        "operationId": "qbt_transfer_info",
+        "responses": {
+          "200": {
+            "description": "Successful operation"
+          },
+          "422": {
+            "description": "Invalid request"
+          },
+          "409": {
+            "description": "Operation conflicts with the current controller or job state"
+          }
+        }
+      }
+    },
+    "/scanner/status": {
+      "get": {
+        "summary": "Scanner status",
+        "operationId": "scanner_status",
+        "responses": {
+          "200": {
+            "description": "Successful operation"
+          },
+          "422": {
+            "description": "Invalid request"
+          },
+          "409": {
+            "description": "Operation conflicts with the current controller or job state"
+          }
+        }
+      }
+    },
+    "/scanner/slots": {
+      "post": {
+        "summary": "Update scanner slots",
+        "operationId": "update_scanner_slots",
+        "responses": {
+          "200": {
+            "description": "Successful operation"
+          },
+          "422": {
+            "description": "Invalid request"
+          },
+          "409": {
+            "description": "Operation conflicts with the current controller or job state"
+          }
+        },
+        "requestBody": {
+          "required": false,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "additionalProperties": true
+              }
+            }
+          }
+        }
+      }
+    },
+    "/scanner/maintenance": {
+      "post": {
+        "summary": "Update scanner maintenance",
+        "operationId": "update_scanner_maintenance",
+        "responses": {
+          "200": {
+            "description": "Successful operation"
+          },
+          "422": {
+            "description": "Invalid request"
+          },
+          "409": {
+            "description": "Operation conflicts with the current controller or job state"
+          }
+        },
+        "requestBody": {
+          "required": false,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "additionalProperties": true
+              }
+            }
+          }
+        }
+      }
+    },
+    "/fs/final-path-suggestions": {
+      "get": {
+        "summary": "Fs final path suggestions",
+        "operationId": "fs_final_path_suggestions",
+        "responses": {
+          "200": {
+            "description": "Successful operation"
+          },
+          "422": {
+            "description": "Invalid request"
+          },
+          "409": {
+            "description": "Operation conflicts with the current controller or job state"
+          }
+        }
+      }
+    },
+    "/jobs/bulk-delete": {
+      "post": {
+        "summary": "Bulk delete jobs",
+        "operationId": "bulk_delete_jobs",
+        "responses": {
+          "200": {
+            "description": "Successful operation"
+          },
+          "422": {
+            "description": "Invalid request"
+          },
+          "409": {
+            "description": "Operation conflicts with the current controller or job state"
+          }
+        },
+        "requestBody": {
+          "required": false,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "additionalProperties": true
+              }
+            }
+          }
+        }
+      }
+    },
+    "/jobs/clear-completed": {
+      "post": {
+        "summary": "Clear completed jobs",
+        "operationId": "clear_completed_jobs",
+        "responses": {
+          "200": {
+            "description": "Successful operation"
+          },
+          "422": {
+            "description": "Invalid request"
+          },
+          "409": {
+            "description": "Operation conflicts with the current controller or job state"
+          }
+        },
+        "requestBody": {
+          "required": false,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "additionalProperties": true
+              }
+            }
+          }
+        }
+      }
+    },
+    "/jobs/clear-failed": {
+      "post": {
+        "summary": "Clear failed jobs",
+        "operationId": "clear_failed_jobs",
+        "responses": {
+          "200": {
+            "description": "Successful operation"
+          },
+          "422": {
+            "description": "Invalid request"
+          },
+          "409": {
+            "description": "Operation conflicts with the current controller or job state"
+          }
+        },
+        "requestBody": {
+          "required": false,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "additionalProperties": true
+              }
+            }
+          }
+        }
+      }
+    },
+    "/events/qbt-complete": {
+      "post": {
+        "summary": "Qbt complete event",
+        "operationId": "qbt_complete_event",
+        "responses": {
+          "200": {
+            "description": "Successful operation"
+          },
+          "422": {
+            "description": "Invalid request"
+          },
+          "409": {
+            "description": "Operation conflicts with the current controller or job state"
+          }
+        },
+        "requestBody": {
+          "required": false,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "additionalProperties": true
+              }
+            }
+          }
+        }
+      }
+    },
+    "/events/qbt-complete-form": {
+      "post": {
+        "summary": "Qbt complete event form",
+        "operationId": "qbt_complete_event_form",
+        "responses": {
+          "200": {
+            "description": "Successful operation"
+          },
+          "422": {
+            "description": "Invalid request"
+          },
+          "409": {
+            "description": "Operation conflicts with the current controller or job state"
+          }
+        },
+        "requestBody": {
+          "content": {
+            "application/x-www-form-urlencoded": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "token": {
+                    "type": "string"
+                  },
+                  "qbt_hash": {
+                    "type": "string"
+                  },
+                  "tags": {
+                    "type": "string"
+                  }
+                }
+              }
+            },
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "token": {
+                    "type": "string"
+                  },
+                  "qbt_hash": {
+                    "type": "string"
+                  },
+                  "tags": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/ui": {
+      "get": {
+        "summary": "Ui",
+        "operationId": "ui",
+        "responses": {
+          "200": {
+            "description": "Successful operation"
+          },
+          "422": {
+            "description": "Invalid request"
+          },
+          "409": {
+            "description": "Operation conflicts with the current controller or job state"
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "AdminToken": {
+        "type": "apiKey",
+        "in": "header",
+        "name": "X-TI-Admin-Token"
+      }
+    },
+    "schemas": {
+      "JobCreate": {
+        "type": "object",
+        "required": [
+          "magnet_uri",
+          "final_parent"
+        ],
+        "properties": {
+          "magnet_uri": {
+            "type": "string"
+          },
+          "final_parent": {
+            "type": "string"
+          },
+          "final_category": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "staging_preference": {
+            "type": "string",
+            "enum": [
+              "local",
+              "nas"
+            ],
+            "default": "local"
+          },
+          "nas_staging_id": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "custom_tags": {
+            "type": "array",
+            "maxItems": 20,
+            "items": {
+              "type": "string",
+              "maxLength": 64
+            }
+          }
+        }
+      }
+    }
+  }
+}

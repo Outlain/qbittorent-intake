@@ -1,0 +1,28 @@
+FROM rust:1.90-bookworm AS build
+WORKDIR /source
+COPY Cargo.toml Cargo.lock ./
+COPY src ./src
+COPY resources ./resources
+COPY templates ./templates
+RUN cp "$(rustc --print sysroot)/share/doc/rust/COPYRIGHT-library.html" \
+      /source/rust-standard-library-COPYRIGHT.html \
+    && cargo build --bin clamd-sidecar --release --locked
+
+FROM debian:bookworm-slim
+RUN apt-get update && apt-get install -y --no-install-recommends clamav-daemon \
+    && rm -rf /var/lib/apt/lists/* \
+    && groupadd --gid 10001 torrent-intake \
+    && useradd --uid 10001 --gid 10001 --create-home torrent-intake \
+    && install -d -o 10001 -g 10001 -m 0750 /run/clamav /tmp/clamav
+COPY --from=build /source/target/release/clamd-sidecar /usr/local/bin/clamd-sidecar
+COPY clamav/clamd.conf /etc/clamav/clamd.conf
+COPY LICENSE NOTICE THIRD_PARTY_LICENSES.txt /usr/share/doc/torrent-intake/
+COPY --from=build /source/rust-standard-library-COPYRIGHT.html /usr/share/doc/torrent-intake/
+ENV DEFINITIONS_DIR=/var/lib/clamav DEFINITIONS_WAIT_TIMEOUT=1800 \
+    DEFINITIONS_MAX_AGE_SECONDS=172800 CLAMD_SOCKET=/run/clamav/clamd.sock \
+    CLAMD_MAX_SCAN_SIZE_MIB=2000 HOME=/home/torrent-intake
+USER 10001:10001
+STOPSIGNAL SIGTERM
+HEALTHCHECK --interval=30s --timeout=10s --start-period=5m --retries=3 \
+    CMD ["clamd-sidecar", "healthcheck"]
+ENTRYPOINT ["clamd-sidecar"]

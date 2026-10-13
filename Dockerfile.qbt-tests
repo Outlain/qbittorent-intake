@@ -1,0 +1,7 @@
+# Build the test target in Dockerfile first. This extension adds only a
+# disposable qBittorrent fixture; the application image never includes it.
+ARG TI_TEST_IMAGE=qbittorent-intake:tests
+FROM ${TI_TEST_IMAGE}
+RUN apt-get update && apt-get install -y --no-install-recommends qbittorrent-nox \
+    && rm -rf /var/lib/apt/lists/*
+CMD ["cargo", "test", "--locked", "--offline", "--test", "qbt_integration", "--", "--ignored", "--nocapture"]

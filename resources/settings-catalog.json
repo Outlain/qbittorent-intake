@@ -1,0 +1,838 @@
+{
+  "sections": {
+    "connection": [
+      "qBittorrent connection",
+      "Connection details, credentials, tags and categories."
+    ],
+    "storage": [
+      "Downloads and storage",
+      "Local capacity and temporary download placement."
+    ],
+    "scanner": [
+      "Scanning",
+      "Workers, timeouts and protected advanced scan limits."
+    ],
+    "general": [
+      "General",
+      "Display and logging preferences."
+    ],
+    "deployment": [
+      "Deployment information",
+      "Protected paths and policies. Change these in Portainer or the local file while Intake is stopped."
+    ]
+  },
+  "default_change_hint": "Saved in /app/data/settings.json. An explicit environment value from Compose or Portainer wins and is saved locally at startup. File/UI changes require a container restart.",
+  "specs": [
+    {
+      "name": "app_name",
+      "category": "Application",
+      "label": "Legacy application name",
+      "description": "Accepted for compatibility with old settings files only; it has no effect. Use UI title to change the page heading.",
+      "sensitive": false,
+      "safety_critical": false,
+      "url_value": false,
+      "change_hint": "Legacy compatibility value, not an active setting. There is no need to define TI_APP_NAME."
+    },
+    {
+      "name": "debug",
+      "category": "Application",
+      "label": "Debug logging",
+      "description": "Enables verbose application logging. Leave disabled for normal operation.",
+      "sensitive": false,
+      "safety_critical": false,
+      "url_value": false
+    },
+    {
+      "name": "data_dir",
+      "category": "Application",
+      "label": "Local application data directory",
+      "description": "Bootstrap container directory containing SQLite, settings, and restore state. Keep its host mount on local SSD storage. Only TI_DATA_DIR in the container environment can relocate it.",
+      "sensitive": false,
+      "safety_critical": true,
+      "url_value": false
+    },
+    {
+      "name": "database_url",
+      "category": "Application",
+      "label": "Database location",
+      "description": "SQLite database containing jobs, checkpoints, migrations and scanner controls. Only a SQLite file inside TI_DATA_DIR is supported; other database engines are not available.",
+      "sensitive": false,
+      "safety_critical": false,
+      "url_value": true
+    },
+    {
+      "name": "ui_title",
+      "category": "Application",
+      "label": "UI title",
+      "description": "Heading displayed at the top of the Torrent Intake interface.",
+      "sensitive": false,
+      "safety_critical": false,
+      "url_value": false
+    },
+    {
+      "name": "qbt_host",
+      "category": "qBittorrent",
+      "label": "qBittorrent API URL",
+      "description": "Private Web API endpoint reachable from Torrent Intake, for example http://qbittorrent:8080 on a shared Docker network. This is separate from the URL you open in your browser.",
+      "sensitive": false,
+      "safety_critical": false,
+      "url_value": true
+    },
+    {
+      "name": "qbt_username",
+      "category": "qBittorrent",
+      "label": "qBittorrent username",
+      "description": "Account name used for authenticated qBittorrent API calls.",
+      "sensitive": false,
+      "safety_critical": false,
+      "url_value": false
+    },
+    {
+      "name": "qbt_password",
+      "category": "qBittorrent",
+      "label": "qBittorrent password",
+      "description": "Password used for qBittorrent API authentication. The value is never returned to the UI.",
+      "sensitive": true,
+      "safety_critical": false,
+      "url_value": false
+    },
+    {
+      "name": "qbt_verify_certificate",
+      "category": "qBittorrent",
+      "label": "Verify qBittorrent TLS certificate",
+      "description": "Validates the qBittorrent HTTPS certificate when TLS is used.",
+      "sensitive": false,
+      "safety_critical": true,
+      "url_value": false,
+      "value_explanations": {
+        "Enabled": "TLS certificate validation is enabled.",
+        "Disabled": "TLS certificate validation is disabled; use only on a trusted private path."
+      }
+    },
+    {
+      "name": "qbt_request_timeout_seconds",
+      "category": "qBittorrent",
+      "label": "qBittorrent request timeout",
+      "description": "Maximum wait for an individual qBittorrent API request, in seconds.",
+      "sensitive": false,
+      "safety_critical": false,
+      "url_value": false
+    },
+    {
+      "name": "qbt_web_url",
+      "category": "qBittorrent",
+      "label": "Browser qBittorrent URL",
+      "description": "Browser-safe link shown in the UI. This can differ from the private API URL used by the container.",
+      "sensitive": false,
+      "safety_critical": false,
+      "url_value": true
+    },
+    {
+      "name": "intake_category",
+      "category": "qBittorrent",
+      "label": "Intake category",
+      "description": "qBittorrent category assigned while a torrent is managed by Intake.",
+      "sensitive": false,
+      "safety_critical": false,
+      "url_value": false
+    },
+    {
+      "name": "managed_tag",
+      "category": "qBittorrent",
+      "label": "Managed tag",
+      "description": "Required qBittorrent tag proving that a torrent remains under Torrent Intake control.",
+      "sensitive": false,
+      "safety_critical": true,
+      "url_value": false
+    },
+    {
+      "name": "auto_create_final_category",
+      "category": "qBittorrent",
+      "label": "Create final categories",
+      "description": "Allows Torrent Intake to create a requested final qBittorrent category when it does not already exist.",
+      "sensitive": false,
+      "safety_critical": false,
+      "url_value": false
+    },
+    {
+      "name": "completion_event_token",
+      "category": "qBittorrent",
+      "label": "Completion-hook token",
+      "description": "Authenticates qBittorrent completion callbacks. The value is never returned to the UI.",
+      "sensitive": true,
+      "safety_critical": false,
+      "url_value": false
+    },
+    {
+      "name": "local_staging_root",
+      "category": "Storage and placement",
+      "label": "Local staging root",
+      "description": "Exact container path used for locally staged torrents. qBittorrent must see the same content at the same path.",
+      "sensitive": false,
+      "safety_critical": true,
+      "url_value": false
+    },
+    {
+      "name": "nas_staging_root",
+      "category": "Storage and placement",
+      "label": "NAS staging root",
+      "description": "Legacy single NAS path, used only while the named NAS list is empty. Existing job choices stay pinned. qBittorrent must see identical container paths.",
+      "sensitive": false,
+      "safety_critical": true,
+      "url_value": false
+    },
+    {
+      "name": "nas_staging_locations",
+      "category": "Storage and placement",
+      "label": "NAS staging locations",
+      "description": "Named temporary download locations mounted at the same paths in Intake and qBittorrent. A marker is an existing file on the NAS (absolute container path); Intake never creates it. Existing job paths cannot be removed while in use.",
+      "sensitive": false,
+      "safety_critical": true,
+      "url_value": false
+    },
+    {
+      "name": "default_nas_staging_id",
+      "category": "Storage and placement",
+      "label": "Automatic NAS default",
+      "description": "Exactly one named NAS used for new jobs and local overflow. Existing jobs retain their saved fallback. This does not select the final library destination.",
+      "sensitive": false,
+      "safety_critical": false,
+      "url_value": false
+    },
+    {
+      "name": "post_promotion_enabled",
+      "category": "Storage and placement",
+      "label": "Run script after promotion",
+      "description": "Run the deployment-configured trusted script only after clean scanning, completed final promotion, delay and revalidation. No scripts are queued for historical completed jobs. Scripts have Intake's permissions, not a separate sandbox.",
+      "sensitive": false,
+      "safety_critical": true,
+      "url_value": false
+    },
+    {
+      "name": "post_promotion_copy_enabled",
+      "category": "Storage and placement",
+      "label": "Copy after successful promotion",
+      "description": "Enable one-time copies for newly promoted torrents whose final parent matches an enabled copy rule. No match means no copy. Originals are retained and collisions are protected. Choose built-in copying OR a custom script; neither is a continuous folder sync.",
+      "sensitive": false,
+      "safety_critical": true,
+      "url_value": false
+    },
+    {
+      "name": "post_promotion_copy_rules",
+      "category": "Storage and placement",
+      "label": "Copy destination rules",
+      "description": "Map final-library source roots to existing destinations under /copy-target. The most specific enabled source containing the job's final parent wins; unmatched jobs are not copied. Disabled rules are ignored, so a broader enabled rule can still match. Relative folders are preserved, without a per-job wrapper. Queued jobs retain their saved rule. Maximum 32 rules.",
+      "sensitive": false,
+      "safety_critical": true,
+      "url_value": false
+    },
+    {
+      "name": "post_promotion_copy_destination",
+      "category": "Storage and placement",
+      "label": "Legacy copy destination (compatibility only)",
+      "description": "Retained for older settings and backups. This global destination is ignored for newly promoted jobs: configure Copy destination rules instead. Previously queued copies keep their pinned destination and layout.",
+      "sensitive": false,
+      "safety_critical": true,
+      "url_value": false,
+      "change_hint": "Do not configure this for new copies. Add explicit source-to-destination rules in Downloads and storage instead."
+    },
+    {
+      "name": "post_promotion_script",
+      "category": "Storage and placement",
+      "label": "Trusted post-promotion script",
+      "description": "Absolute executable path under /hooks, mounted read-only. Configure in Portainer or settings.json while stopped. Script files are NOT included in portable backups. Never point this at downloaded content.",
+      "sensitive": false,
+      "safety_critical": true,
+      "url_value": false
+    },
+    {
+      "name": "post_promotion_delay_seconds",
+      "category": "Storage and placement",
+      "label": "Post-promotion buffer",
+      "description": "Minimum delay after verified promotion before checking again and copying or running the script; not a substitute for move verification.",
+      "sensitive": false,
+      "safety_critical": false,
+      "url_value": false
+    },
+    {
+      "name": "post_promotion_timeout_seconds",
+      "category": "Storage and placement",
+      "label": "Post-promotion action timeout",
+      "description": "Maximum copy or script runtime, followed by a short shutdown grace period. A timeout does not rescan or move the promoted torrent again. Inspect partial copies before retrying.",
+      "sensitive": false,
+      "safety_critical": false,
+      "url_value": false
+    },
+    {
+      "name": "final_parent_prefix",
+      "category": "Storage and placement",
+      "label": "Primary final root",
+      "description": "Primary canonical media boundary allowed for clean promotion destinations.",
+      "sensitive": false,
+      "safety_critical": true,
+      "url_value": false
+    },
+    {
+      "name": "final_parent_prefixes",
+      "category": "Storage and placement",
+      "label": "Additional final roots",
+      "description": "Optional comma-separated canonical media boundaries allowed in addition to the primary final root.",
+      "sensitive": false,
+      "safety_critical": true,
+      "url_value": false
+    },
+    {
+      "name": "local_overflow_policy",
+      "category": "Storage and placement",
+      "label": "Local overflow policy",
+      "description": "Action taken when aggregate local staging capacity is unavailable for another torrent.",
+      "sensitive": false,
+      "safety_critical": false,
+      "url_value": false,
+      "value_explanations": {
+        "queue": "Wait for local capacity while preserving the requested local staging preference.",
+        "nas": "Switch eligible work to temporary NAS intake staging when local capacity is unavailable; the chosen final destination does not change."
+      }
+    },
+    {
+      "name": "local_max_gib",
+      "category": "Storage and placement",
+      "label": "Maximum local torrent size",
+      "description": "A torrent larger than this GiB limit is directed to NAS staging instead of local staging.",
+      "sensitive": false,
+      "safety_critical": false,
+      "url_value": false
+    },
+    {
+      "name": "local_free_space_buffer_gib",
+      "category": "Storage and placement",
+      "label": "Local free-space reserve",
+      "description": "GiB kept unused when Torrent Intake calculates safe local staging capacity.",
+      "sensitive": false,
+      "safety_critical": false,
+      "url_value": false
+    },
+    {
+      "name": "polling_interval_seconds",
+      "category": "Storage and placement",
+      "label": "Recovery polling interval",
+      "description": "How often the background reconciliation pass checks qBittorrent when no completion callback arrives.",
+      "sensitive": false,
+      "safety_critical": false,
+      "url_value": false
+    },
+    {
+      "name": "completion_grace_seconds",
+      "category": "Storage and placement",
+      "label": "Completion grace period",
+      "description": "Delay after a completion signal before Torrent Intake begins its final completion and pause checks.",
+      "sensitive": false,
+      "safety_critical": false,
+      "url_value": false
+    },
+    {
+      "name": "scanner_backend",
+      "category": "ClamAV scanner",
+      "label": "Scanner backend",
+      "description": "Compatibility selector: only clamd is supported. It may be omitted; there is no clamscan or alternate backend.",
+      "sensitive": false,
+      "safety_critical": true,
+      "url_value": false
+    },
+    {
+      "name": "clamd_socket_path",
+      "category": "ClamAV scanner",
+      "label": "ClamD socket",
+      "description": "Private Unix socket shared only with the Torrent Intake ClamD sidecar.",
+      "sensitive": false,
+      "safety_critical": true,
+      "url_value": false
+    },
+    {
+      "name": "scanner_policy_version",
+      "category": "ClamAV scanner",
+      "label": "Scanner policy version",
+      "description": "Identity of the scan policy stored with checkpoints. Changing it invalidates incompatible clean checkpoints.",
+      "sensitive": false,
+      "safety_critical": true,
+      "url_value": false
+    },
+    {
+      "name": "scanner_max_file_mib",
+      "category": "ClamAV scanner",
+      "label": "Native ClamD stream boundary",
+      "description": "Raw-size boundary for one native ClamD stream. Larger RAR/ZIP archives use member extraction; verified video and raw TrueHD use bounded windows. Eligible native size-limit failures use the same routes.",
+      "sensitive": false,
+      "safety_critical": true,
+      "url_value": false
+    },
+    {
+      "name": "scanner_health_cache_seconds",
+      "category": "ClamAV scanner",
+      "label": "Scanner health cache",
+      "description": "How long a successful ClamD health result may be reused, in seconds.",
+      "sensitive": false,
+      "safety_critical": false,
+      "url_value": false
+    },
+    {
+      "name": "scanner_connect_timeout_seconds",
+      "category": "ClamAV scanner",
+      "label": "ClamD connection timeout",
+      "description": "Maximum time to establish a private socket connection, in seconds.",
+      "sensitive": false,
+      "safety_critical": false,
+      "url_value": false
+    },
+    {
+      "name": "scanner_scan_timeout_seconds",
+      "category": "ClamAV scanner",
+      "label": "Per-file scan timeout",
+      "description": "Maximum total client wait for one streamed file scan, in seconds.",
+      "sensitive": false,
+      "safety_critical": false,
+      "url_value": false
+    },
+    {
+      "name": "scanner_definitions_warn_hours",
+      "category": "ClamAV scanner",
+      "label": "Definition warning age",
+      "description": "Definition age in hours at which the UI and events begin warning before scans are blocked.",
+      "sensitive": false,
+      "safety_critical": false,
+      "url_value": false
+    },
+    {
+      "name": "scanner_definitions_stale_hours",
+      "category": "ClamAV scanner",
+      "label": "Definition stale age",
+      "description": "Definition age in hours at which scanning fails closed until current definitions are available.",
+      "sensitive": false,
+      "safety_critical": true,
+      "url_value": false
+    },
+    {
+      "name": "large_media_enabled",
+      "category": "ClamAV scanner",
+      "label": "Large-media scanner",
+      "description": "Routes oversized verified videos and narrowly validated raw TrueHD audio, plus eligible media whose native scan reaches a parser/expanded-data limit, through full-byte overlapping ClamD windows.",
+      "sensitive": false,
+      "safety_critical": true,
+      "url_value": false
+    },
+    {
+      "name": "large_media_max_file_gib",
+      "category": "ClamAV scanner",
+      "label": "Maximum large-media size",
+      "description": "Hard GiB ceiling for the bounded large-media path. Larger individual files remain held without a clean verdict.",
+      "sensitive": false,
+      "safety_critical": true,
+      "url_value": false
+    },
+    {
+      "name": "large_media_chunk_mib",
+      "category": "ClamAV scanner",
+      "label": "Large-media ClamD window",
+      "description": "MiB sent in each independent ClamD window. It must remain below the native ClamD stream limit.",
+      "sensitive": false,
+      "safety_critical": true,
+      "url_value": false
+    },
+    {
+      "name": "large_media_min_chunk_mib",
+      "category": "ClamAV scanner",
+      "label": "Minimum adaptive media window",
+      "description": "Smallest MiB window allowed for a raw stream/file size limit. Expansion, recursion, and unknown limits within a window remain blocked instead of being subdivided.",
+      "sensitive": false,
+      "safety_critical": true,
+      "url_value": false
+    },
+    {
+      "name": "large_media_overlap_kib",
+      "category": "ClamAV scanner",
+      "label": "Large-media window overlap",
+      "description": "KiB repeated between neighboring windows to preserve short byte signatures at boundaries; this cannot preserve every signature or container parser context.",
+      "sensitive": false,
+      "safety_critical": true,
+      "url_value": false
+    },
+    {
+      "name": "large_media_probe_timeout_seconds",
+      "category": "ClamAV scanner",
+      "label": "Media validation timeout",
+      "description": "Maximum time allowed for ffprobe to verify the real container and stream layout of an oversized file.",
+      "sensitive": false,
+      "safety_critical": false,
+      "url_value": false
+    },
+    {
+      "name": "large_media_scan_timeout_seconds",
+      "category": "ClamAV scanner",
+      "label": "Large-media scan timeout",
+      "description": "Total deadline for validating and reading every window of one oversized media file.",
+      "sensitive": false,
+      "safety_critical": false,
+      "url_value": false
+    },
+    {
+      "name": "ffprobe_binary",
+      "category": "ClamAV scanner",
+      "label": "ffprobe executable",
+      "description": "Image-provided ffprobe path used to validate oversized media. The Docker image installs it at build time.",
+      "sensitive": false,
+      "safety_critical": true,
+      "url_value": false
+    },
+    {
+      "name": "ffmpeg_binary",
+      "category": "ClamAV scanner",
+      "label": "ffmpeg executable",
+      "description": "Image-provided tool for bounded attachment extraction. It does not transcode media files or unpack torrent archives.",
+      "sensitive": false,
+      "safety_critical": true,
+      "url_value": false
+    },
+    {
+      "name": "media_attachment_max_mib",
+      "category": "ClamAV scanner",
+      "label": "Maximum attachment size",
+      "description": "MiB allowed for one extracted attachment, between 1 and 64. Each attachment must complete a native ClamD scan; it is never chunked or skipped.",
+      "sensitive": false,
+      "safety_critical": true,
+      "url_value": false
+    },
+    {
+      "name": "media_attachment_total_mib",
+      "category": "ClamAV scanner",
+      "label": "Total attachment budget",
+      "description": "Maximum MiB extracted from one media file, at most 256. Cover images reserve their per-attachment maximum because their size is unknown before extraction.",
+      "sensitive": false,
+      "safety_critical": true,
+      "url_value": false
+    },
+    {
+      "name": "archive_enabled",
+      "category": "ClamAV scanner",
+      "label": "Archive member scanning",
+      "description": "Inspect oversized RAR/ZIP archives and eligible native size-limit failures using temporary extracted copies. Original archives and torrent folders are preserved.",
+      "sensitive": false,
+      "safety_critical": true,
+      "url_value": false
+    },
+    {
+      "name": "archive_scratch_dir",
+      "category": "ClamAV scanner",
+      "label": "Archive scratch storage",
+      "description": "Existing container directory on local or NAS storage. Intake uses a private archive-scan subdirectory. Leave blank to use TI_DATA_DIR. Configure the matching writable Docker mount first; unavailable custom storage never falls back to the data disk.",
+      "sensitive": false,
+      "safety_critical": true,
+      "url_value": false
+    },
+    {
+      "name": "archive_scratch_mount_marker",
+      "category": "ClamAV scanner",
+      "label": "Archive scratch mount marker",
+      "description": "Optional absolute path to an existing readable marker file inside custom scratch storage. A missing marker blocks archive inspection; Intake never creates it. Leave blank to disable the marker check.",
+      "sensitive": false,
+      "safety_critical": true,
+      "url_value": false
+    },
+    {
+      "name": "archive_max_file_gib",
+      "category": "ClamAV scanner",
+      "label": "Maximum archive size",
+      "description": "Maximum GiB for a source RAR/ZIP archive admitted to member scanning.",
+      "sensitive": false,
+      "safety_critical": true,
+      "url_value": false
+    },
+    {
+      "name": "archive_max_expanded_gib",
+      "category": "ClamAV scanner",
+      "label": "Archive extraction budget",
+      "description": "Maximum total GiB extracted per archive, including nested archive copies. Scratch files use the selected scratch filesystem and are removed after inspection.",
+      "sensitive": false,
+      "safety_critical": true,
+      "url_value": false
+    },
+    {
+      "name": "archive_max_files",
+      "category": "ClamAV scanner",
+      "label": "Maximum archive entries",
+      "description": "Total entries, including directories and nested archives, admitted during one archive inspection.",
+      "sensitive": false,
+      "safety_critical": true,
+      "url_value": false
+    },
+    {
+      "name": "archive_max_depth",
+      "category": "ClamAV scanner",
+      "label": "Maximum archive nesting",
+      "description": "Maximum RAR/ZIP nesting levels sharing the extraction budget; the outer archive is level one.",
+      "sensitive": false,
+      "safety_critical": true,
+      "url_value": false
+    },
+    {
+      "name": "archive_scan_timeout_seconds",
+      "category": "ClamAV scanner",
+      "label": "Archive inspection timeout",
+      "description": "Total seconds allowed for extraction and all member scans of one archive.",
+      "sensitive": false,
+      "safety_critical": false,
+      "url_value": false
+    },
+    {
+      "name": "archive_free_space_buffer_gib",
+      "category": "ClamAV scanner",
+      "label": "Archive scratch free-space reserve",
+      "description": "GiB kept free on the selected scratch filesystem while temporary members are extracted.",
+      "sensitive": false,
+      "safety_critical": true,
+      "url_value": false
+    },
+    {
+      "name": "per_job_scan_workers",
+      "category": "Scan scheduling",
+      "label": "Large-file workers per torrent",
+      "description": "Maximum large-media byte ranges from one torrent that may be streamed to ClamD simultaneously.",
+      "sensitive": false,
+      "safety_critical": false,
+      "url_value": false
+    },
+    {
+      "name": "clamd_max_inflight_requests",
+      "category": "Scan scheduling",
+      "label": "Global ClamD request limit",
+      "description": "Hard application-wide limit for simultaneous ClamD INSTREAM requests across every active torrent. Keep it at or below ClamD MaxThreads.",
+      "sensitive": false,
+      "safety_critical": true,
+      "url_value": false
+    },
+    {
+      "name": "max_concurrent_scans",
+      "category": "Scan scheduling",
+      "label": "Default concurrent scans",
+      "description": "Default torrent scan slots for a new queue and after a temporary boost ends. Existing slot requests are saved in SQLite.",
+      "sensitive": false,
+      "safety_critical": false,
+      "url_value": false,
+      "change_hint": "Use the Scan Queue slot control for live adjustments. Edit this field, the local file or an environment override for the default, then restart; a saved queue request is not automatically reset by restarting."
+    },
+    {
+      "name": "max_scan_slots",
+      "category": "Scan scheduling",
+      "label": "Hard scan-slot ceiling",
+      "description": "Maximum slot count the runtime Scan Queue control is permitted to request.",
+      "sensitive": false,
+      "safety_critical": true,
+      "url_value": false
+    },
+    {
+      "name": "max_concurrent_large_scans",
+      "category": "Scan scheduling",
+      "label": "Concurrent large scans",
+      "description": "Maximum number of torrents above the large-job threshold that can scan at the same time.",
+      "sensitive": false,
+      "safety_critical": false,
+      "url_value": false
+    },
+    {
+      "name": "large_scan_gib",
+      "category": "Scan scheduling",
+      "label": "Large-job threshold",
+      "description": "Torrent size in GiB at which the separate large-scan concurrency bound applies.",
+      "sensitive": false,
+      "safety_critical": false,
+      "url_value": false
+    },
+    {
+      "name": "scan_scheduler_interval_seconds",
+      "category": "Scan scheduling",
+      "label": "Scan scheduler interval",
+      "description": "Delay between scheduler attempts to claim pending scan work, in seconds.",
+      "sensitive": false,
+      "safety_critical": false,
+      "url_value": false
+    },
+    {
+      "name": "scan_lease_seconds",
+      "category": "Scan scheduling",
+      "label": "Scan lease duration",
+      "description": "Restart-recovery lease protecting an actively owned scan, in seconds.",
+      "sensitive": false,
+      "safety_critical": false,
+      "url_value": false
+    },
+    {
+      "name": "scan_heartbeat_seconds",
+      "category": "Scan scheduling",
+      "label": "Scan heartbeat interval",
+      "description": "How frequently an active worker refreshes its durable scan lease, in seconds.",
+      "sensitive": false,
+      "safety_critical": false,
+      "url_value": false
+    },
+    {
+      "name": "scan_retry_base_seconds",
+      "category": "Scan scheduling",
+      "label": "Scan retry base delay",
+      "description": "Initial delay used by exponential retry after scanner failures, in seconds.",
+      "sensitive": false,
+      "safety_critical": false,
+      "url_value": false
+    },
+    {
+      "name": "scan_max_failures",
+      "category": "Scan scheduling",
+      "label": "Maximum scan failures",
+      "description": "Failure count after which a file/job requires explicit operator retry.",
+      "sensitive": false,
+      "safety_critical": false,
+      "url_value": false
+    },
+    {
+      "name": "scan_yield_after_files",
+      "category": "Scan scheduling",
+      "label": "Files before scheduler yield",
+      "description": "Number of successfully checkpointed files processed before a worker yields so other queued jobs can progress.",
+      "sensitive": false,
+      "safety_critical": false,
+      "url_value": false
+    },
+    {
+      "name": "pause_confirmation_timeout_seconds",
+      "category": "Scan scheduling",
+      "label": "Pause confirmation timeout",
+      "description": "Maximum wait for qBittorrent to confirm a torrent is paused before scanning or a destructive action.",
+      "sensitive": false,
+      "safety_critical": true,
+      "url_value": false
+    },
+    {
+      "name": "infected_action",
+      "category": "Infection and events",
+      "label": "Infected-content action",
+      "description": "Action after a verified malware detection. This safety-critical value cannot be changed from the UI.",
+      "sensitive": false,
+      "safety_critical": true,
+      "url_value": false,
+      "value_explanations": {
+        "hold": "Leave the torrent paused in its verified staging location. This is the built-in safe default.",
+        "quarantine": "Ask qBittorrent to move the torrent into an exclusive quarantine directory; both containers need the same /quarantine mount.",
+        "delete": "After repeating all safety checks, ask qBittorrent to remove the torrent and delete its data, then verify removal."
+      }
+    },
+    {
+      "name": "quarantine_root",
+      "category": "Infection and events",
+      "label": "Torrent quarantine root",
+      "description": "Canonical quarantine boundary used only when the infected-content action is quarantine.",
+      "sensitive": false,
+      "safety_critical": true,
+      "url_value": false
+    },
+    {
+      "name": "event_dir",
+      "category": "Infection and events",
+      "label": "Structured event directory",
+      "description": "Writable spool where Torrent Intake atomically emits notifier events. It must be persistent.",
+      "sensitive": false,
+      "safety_critical": true,
+      "url_value": false
+    }
+  ],
+  "advanced": [
+    "archive_enabled",
+    "archive_free_space_buffer_gib",
+    "archive_max_depth",
+    "archive_max_expanded_gib",
+    "archive_max_file_gib",
+    "archive_max_files",
+    "archive_scratch_dir",
+    "archive_scratch_mount_marker",
+    "clamd_max_inflight_requests",
+    "large_media_chunk_mib",
+    "large_media_enabled",
+    "large_media_max_file_gib",
+    "large_media_min_chunk_mib",
+    "large_media_overlap_kib",
+    "max_scan_slots",
+    "media_attachment_max_mib",
+    "media_attachment_total_mib",
+    "nas_staging_locations",
+    "pause_confirmation_timeout_seconds",
+    "post_promotion_copy_enabled",
+    "post_promotion_copy_rules",
+    "post_promotion_enabled",
+    "scanner_definitions_stale_hours",
+    "scanner_definitions_warn_hours",
+    "scanner_max_file_mib"
+  ],
+  "number_limits": {
+    "completion_grace_seconds": [
+      0,
+      null
+    ],
+    "local_free_space_buffer_gib": [
+      0,
+      null
+    ],
+    "large_media_overlap_kib": [
+      0,
+      null
+    ],
+    "scanner_max_file_mib": [
+      1,
+      2000
+    ],
+    "per_job_scan_workers": [
+      1,
+      4
+    ],
+    "clamd_max_inflight_requests": [
+      1,
+      4
+    ],
+    "media_attachment_max_mib": [
+      1,
+      64
+    ],
+    "media_attachment_total_mib": [
+      1,
+      256
+    ],
+    "post_promotion_delay_seconds": [
+      0,
+      3600
+    ],
+    "post_promotion_timeout_seconds": [
+      1,
+      604800
+    ],
+    "archive_max_file_gib": [
+      1,
+      1024
+    ],
+    "archive_max_expanded_gib": [
+      1,
+      1024
+    ],
+    "archive_max_files": [
+      1,
+      100000
+    ],
+    "archive_max_depth": [
+      1,
+      8
+    ],
+    "archive_scan_timeout_seconds": [
+      1,
+      172800
+    ],
+    "archive_free_space_buffer_gib": [
+      1,
+      1024
+    ]
+  }
+}

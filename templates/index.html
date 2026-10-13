@@ -1,0 +1,3653 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{{ title }}</title>
+  <style>
+    :root {
+      --bg: #0a111a;
+      --surface: rgba(13, 21, 33, 0.9);
+      --surface-strong: #121d2d;
+      --ink: #edf3fc;
+      --muted: #98a8bf;
+      --line: rgba(152, 168, 191, 0.16);
+      --accent: #de7d36;
+      --accent-deep: #a54916;
+      --accent-soft: rgba(222, 125, 54, 0.16);
+      --success: #4fd18c;
+      --warning: #e9b24d;
+      --danger: #ff7272;
+      --shadow: 0 28px 90px rgba(0, 0, 0, 0.42);
+      --radius: 24px;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      font-family: "Avenir Next", "Segoe UI", sans-serif;
+      color: var(--ink);
+      background:
+        radial-gradient(circle at top left, rgba(222, 125, 54, 0.18), transparent 24%),
+        radial-gradient(circle at top right, rgba(79, 209, 140, 0.12), transparent 20%),
+        radial-gradient(circle at bottom center, rgba(43, 97, 163, 0.14), transparent 28%),
+        linear-gradient(180deg, #09111b 0%, #0d1725 52%, #08111a 100%);
+    }
+
+    .shell {
+      width: min(1680px, calc(100vw - 32px));
+      margin: 28px auto 48px;
+    }
+
+    body.settings-open {
+      overflow: hidden;
+    }
+
+    .page-tools {
+      display: flex;
+      justify-content: flex-end;
+      margin-bottom: 12px;
+    }
+
+    .settings-trigger {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      min-height: 42px;
+    }
+
+    .settings-trigger-icon {
+      font-size: 1.05rem;
+      line-height: 1;
+    }
+
+    .settings-dialog {
+      position: fixed;
+      inset: 0;
+      z-index: 1000;
+      display: flex;
+      justify-content: flex-end;
+      background: rgba(2, 7, 13, 0.76);
+      backdrop-filter: blur(8px);
+    }
+
+    .settings-dialog[hidden] {
+      display: none;
+    }
+
+    .settings-drawer {
+      width: min(920px, 100vw);
+      height: 100%;
+      overflow-y: auto;
+      background: #0d1725;
+      border-left: 1px solid var(--line);
+      box-shadow: -28px 0 80px rgba(0, 0, 0, 0.48);
+    }
+
+    .settings-head {
+      position: sticky;
+      top: 0;
+      z-index: 2;
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 18px;
+      padding: 22px 24px;
+      border-bottom: 1px solid var(--line);
+      background: rgba(13, 23, 37, 0.96);
+      backdrop-filter: blur(16px);
+    }
+
+    .settings-head h2 {
+      margin: 5px 0 6px;
+      font-size: 1.6rem;
+      letter-spacing: -0.03em;
+    }
+
+    .settings-head p {
+      margin: 0;
+      color: var(--muted);
+      line-height: 1.45;
+    }
+
+    .settings-head .settings-close {
+      flex: 0 0 auto;
+      width: 42px;
+      height: 42px;
+      padding: 0;
+      font-size: 1.35rem;
+    }
+
+    .settings-content {
+      display: grid;
+      gap: 20px;
+      padding: 22px 24px 36px;
+    }
+
+    .settings-callout {
+      padding: 16px 18px;
+      border: 1px solid rgba(233, 178, 77, 0.35);
+      border-radius: 16px;
+      background: rgba(233, 178, 77, 0.09);
+      color: #f4d99e;
+      line-height: 1.5;
+    }
+
+    .settings-callout strong {
+      color: var(--ink);
+    }
+
+    .settings-search {
+      width: 100%;
+    }
+
+    .settings-no-results {
+      margin: 0;
+      padding: 18px;
+      border: 1px dashed var(--line);
+      border-radius: 16px;
+      color: var(--muted);
+      text-align: center;
+    }
+
+    .settings-groups {
+      display: grid;
+      gap: 22px;
+    }
+
+    .settings-group {
+      display: grid;
+      gap: 12px;
+    }
+
+    .settings-group-head h3 {
+      margin: 0 0 4px;
+      font-size: 1.15rem;
+    }
+
+    .settings-group-head p {
+      margin: 0;
+      color: var(--muted);
+      line-height: 1.45;
+    }
+
+    .settings-list {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 12px;
+    }
+
+    .setting-card {
+      display: grid;
+      align-content: start;
+      gap: 11px;
+      padding: 16px;
+      border: 1px solid var(--line);
+      border-radius: 17px;
+      background: rgba(255, 255, 255, 0.03);
+    }
+
+    .setting-card.safety-critical {
+      border-color: rgba(233, 178, 77, 0.32);
+    }
+
+    .setting-card-head {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 10px;
+    }
+
+    .setting-card h4 {
+      margin: 0 0 4px;
+      font-size: 1rem;
+    }
+
+    .setting-badge {
+      padding: 4px 7px;
+      border-radius: 999px;
+      background: rgba(152, 168, 191, 0.12);
+      color: var(--muted);
+      font-size: 0.66rem;
+      font-weight: 800;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      white-space: nowrap;
+    }
+
+    .setting-badge.warning {
+      background: rgba(233, 178, 77, 0.13);
+      color: var(--warning);
+    }
+
+    .setting-description,
+    .setting-effect {
+      margin: 0;
+      font-size: 0.84rem;
+      line-height: 1.48;
+    }
+
+    .setting-description {
+      color: var(--muted);
+    }
+
+    .setting-effect {
+      padding: 10px 11px;
+      border-left: 3px solid var(--accent);
+      border-radius: 0 10px 10px 0;
+      background: var(--accent-soft);
+      color: #f0c59f;
+    }
+
+    .panel {
+      background: var(--surface);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(16px);
+    }
+
+    .hero {
+      margin-bottom: 0;
+    }
+
+    .hero-details {
+      overflow: hidden;
+    }
+
+    .hero-details[open] .hero-copy {
+      display: block;
+    }
+
+    .hero-copy {
+      padding: 28px 30px 24px;
+    }
+
+    .hero-mobile-summary {
+      display: none;
+      list-style: none;
+      cursor: pointer;
+      padding: 18px 20px;
+    }
+
+    .hero-mobile-summary::-webkit-details-marker {
+      display: none;
+    }
+
+    .hero-mobile-summary-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 14px;
+    }
+
+    .hero-mobile-summary-text {
+      min-width: 0;
+    }
+
+    .hero-mobile-summary .eyebrow {
+      margin-bottom: 10px;
+    }
+
+    .hero-mobile-summary-title {
+      margin: 0;
+      font-size: 1.35rem;
+      letter-spacing: -0.03em;
+    }
+
+    .hero-mobile-summary-copy {
+      margin: 8px 0 0;
+      color: var(--muted);
+      font-size: 0.88rem;
+      line-height: 1.4;
+    }
+
+    .hero-mobile-summary-icon {
+      flex: 0 0 auto;
+      width: 38px;
+      height: 38px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 999px;
+      border: 1px solid var(--line);
+      background: rgba(255, 255, 255, 0.05);
+      color: var(--muted);
+      font-size: 1rem;
+      transition: transform 160ms ease, color 160ms ease, border-color 160ms ease;
+    }
+
+    .hero-details[open] .hero-mobile-summary-icon {
+      transform: rotate(180deg);
+      color: var(--ink);
+      border-color: rgba(222, 125, 54, 0.32);
+    }
+
+    .eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 7px 12px;
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.06);
+      color: var(--muted);
+      font-size: 0.83rem;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+    }
+
+    h1 {
+      margin: 18px 0 10px;
+      font-size: clamp(2rem, 3vw, 3rem);
+      line-height: 1;
+      letter-spacing: -0.04em;
+    }
+
+    .lede {
+      margin: 0 0 20px;
+      max-width: 58ch;
+      color: var(--muted);
+      font-size: 1rem;
+      line-height: 1.55;
+    }
+
+    .meta-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 12px;
+    }
+
+    .meta-card {
+      padding: 14px 16px;
+      border-radius: 18px;
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid var(--line);
+    }
+
+    .meta-label {
+      display: block;
+      margin-bottom: 4px;
+      color: var(--muted);
+      font-size: 0.8rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .meta-value {
+      font-size: 0.96rem;
+      word-break: break-word;
+    }
+
+    .meta-action {
+      display: inline-flex;
+      margin-top: 6px;
+      text-decoration: none;
+    }
+
+    .form-panel {
+      padding: 24px;
+      margin-bottom: 0;
+    }
+
+    .top-layout {
+      display: grid;
+      gap: 18px;
+      margin-bottom: 18px;
+    }
+
+    .section-title {
+      margin: 0 0 6px;
+      font-size: 1.35rem;
+      letter-spacing: -0.03em;
+    }
+
+    .section-copy {
+      margin: 0 0 18px;
+      color: var(--muted);
+      line-height: 1.5;
+    }
+
+    .field-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 14px;
+    }
+
+    .field,
+    .field-wide {
+      display: grid;
+      gap: 8px;
+    }
+
+    .field-wide {
+      grid-column: 1 / -1;
+    }
+
+    #nas-staging-field[hidden], .bulk-row-field[hidden], [data-retry-hook][hidden], [data-cancel-copy][hidden] { display: none; }
+    .nas-move-field { min-width: 0; max-width: 100%; }
+    .nas-move-field select { min-width: 0; max-width: 420px; }
+
+    #torrent-file-input {
+      min-width: 0;
+      max-width: 100%;
+    }
+
+    #torrent-file-summary {
+      overflow-wrap: anywhere;
+    }
+
+    label span {
+      font-size: 0.92rem;
+      font-weight: 600;
+    }
+
+    .hint {
+      color: var(--muted);
+      font-size: 0.82rem;
+      line-height: 1.4;
+    }
+
+    .visually-hidden {
+      position: absolute !important;
+      width: 1px;
+      height: 1px;
+      padding: 0;
+      margin: -1px;
+      overflow: hidden;
+      clip: rect(0, 0, 0, 0);
+      white-space: nowrap;
+      border: 0;
+    }
+
+    .combo-field {
+      position: relative;
+    }
+
+    .combo-control {
+      position: relative;
+    }
+
+    .combo-input {
+      padding-right: 52px;
+    }
+
+    .combo-toggle {
+      position: absolute;
+      top: 50%;
+      right: 10px;
+      transform: translateY(-50%);
+      width: 34px;
+      height: 34px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.05);
+      color: var(--muted);
+      cursor: pointer;
+      transition: background 140ms ease, border-color 140ms ease, color 140ms ease, transform 140ms ease;
+    }
+
+    .combo-toggle:hover,
+    .combo-toggle:focus-visible {
+      background: rgba(255, 255, 255, 0.09);
+      border-color: rgba(222, 125, 54, 0.32);
+      color: var(--ink);
+      outline: none;
+    }
+
+    .combo-field[data-open="true"] .combo-toggle {
+      color: var(--ink);
+      border-color: rgba(222, 125, 54, 0.32);
+      transform: translateY(-50%) rotate(180deg);
+    }
+
+    .combo-menu {
+      position: absolute;
+      top: calc(100% + 8px);
+      left: 0;
+      right: 0;
+      z-index: 20;
+      display: grid;
+      gap: 6px;
+      padding: 10px;
+      border-radius: 18px;
+      border: 1px solid var(--line);
+      background: rgba(8, 14, 23, 0.98);
+      box-shadow: 0 20px 48px rgba(0, 0, 0, 0.38);
+      max-height: 240px;
+      overflow-y: auto;
+      -webkit-overflow-scrolling: touch;
+      overscroll-behavior: contain;
+      touch-action: pan-y;
+    }
+
+    .combo-menu[hidden] {
+      display: none;
+    }
+
+    .combo-option,
+    .combo-empty {
+      width: 100%;
+      padding: 11px 12px;
+      border-radius: 14px;
+      border: 1px solid transparent;
+      background: rgba(255, 255, 255, 0.04);
+      color: var(--ink);
+      text-align: left;
+      line-height: 1.35;
+    }
+
+    .combo-option {
+      cursor: pointer;
+      transition: background 140ms ease, border-color 140ms ease;
+    }
+
+    .combo-option:hover,
+    .combo-option:focus-visible,
+    .combo-option[aria-selected="true"],
+    .combo-option[data-active="true"] {
+      background: rgba(222, 125, 54, 0.1);
+      border-color: rgba(222, 125, 54, 0.24);
+      outline: none;
+    }
+
+    .combo-empty {
+      color: var(--muted);
+      font-size: 0.88rem;
+    }
+
+    .tag-picker {
+      position: relative;
+      display: grid;
+      gap: 8px;
+    }
+
+    .tag-chip-list {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .tag-chip-list:empty {
+      display: none;
+    }
+
+    .tag-chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      max-width: 100%;
+      padding: 6px 8px 6px 11px;
+      border: 1px solid rgba(222, 125, 54, 0.28);
+      border-radius: 999px;
+      background: rgba(222, 125, 54, 0.1);
+      color: var(--ink);
+    }
+
+    .tag-chip-name {
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      font-size: 0.86rem;
+      font-weight: 600;
+    }
+
+    .tag-chip-remove {
+      width: 24px;
+      height: 24px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      border: 0;
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.08);
+      color: var(--muted);
+      cursor: pointer;
+    }
+
+    .tag-chip-remove:hover,
+    .tag-chip-remove:focus-visible {
+      background: rgba(255, 255, 255, 0.16);
+      color: var(--ink);
+      outline: 2px solid rgba(222, 125, 54, 0.45);
+      outline-offset: 1px;
+    }
+
+    .tag-input-row {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      gap: 8px;
+    }
+
+    .tag-add-button {
+      min-width: 88px;
+      padding: 0 16px;
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      background: rgba(255, 255, 255, 0.06);
+      color: var(--ink);
+      cursor: pointer;
+    }
+
+    .tag-add-button:hover,
+    .tag-add-button:focus-visible {
+      background: rgba(222, 125, 54, 0.12);
+      border-color: rgba(222, 125, 54, 0.38);
+      outline: none;
+    }
+
+    .tag-picker-status {
+      min-height: 1.2em;
+      color: var(--muted);
+      font-size: 0.8rem;
+      line-height: 1.35;
+    }
+
+    .tag-picker-status.error {
+      color: var(--danger);
+    }
+
+    input,
+    textarea,
+    select,
+    button {
+      font: inherit;
+    }
+
+    input,
+    textarea,
+    select {
+      width: 100%;
+      padding: 13px 14px;
+      border-radius: 16px;
+      border: 1px solid var(--line);
+      background: rgba(6, 11, 18, 0.72);
+      color: var(--ink);
+      transition: border-color 140ms ease, box-shadow 140ms ease, background 140ms ease;
+    }
+
+    input:focus,
+    textarea:focus,
+    select:focus {
+      outline: none;
+      border-color: rgba(222, 125, 54, 0.58);
+      box-shadow: 0 0 0 4px rgba(222, 125, 54, 0.14);
+      background: rgba(10, 16, 26, 0.96);
+    }
+
+    textarea {
+      min-height: 128px;
+      resize: vertical;
+      line-height: 1.45;
+    }
+
+    .actions-row {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 12px;
+      margin-top: 6px;
+    }
+
+    .button-primary,
+    .button-secondary,
+    .job-action {
+      appearance: none;
+      border: none;
+      border-radius: 999px;
+      cursor: pointer;
+      transition: transform 140ms ease, box-shadow 140ms ease, opacity 140ms ease, background 140ms ease;
+    }
+
+    .button-primary {
+      padding: 13px 18px;
+      background: linear-gradient(135deg, var(--accent) 0%, var(--accent-deep) 100%);
+      color: #fff8f3;
+      font-weight: 700;
+      box-shadow: 0 12px 28px rgba(125, 52, 21, 0.24);
+    }
+
+    .button-secondary {
+      padding: 11px 15px;
+      background: rgba(255, 255, 255, 0.08);
+      color: var(--ink);
+      font-weight: 600;
+    }
+
+    .button-primary:hover,
+    .button-secondary:hover,
+    .job-action:hover {
+      transform: translateY(-1px);
+    }
+
+    .button-primary:disabled,
+    .button-secondary:disabled,
+    .job-action:disabled {
+      opacity: 0.55;
+      cursor: default;
+      transform: none;
+      box-shadow: none;
+    }
+
+    .form-status {
+      min-height: 1.2em;
+      color: var(--muted);
+      font-size: 0.88rem;
+    }
+
+    .form-status.error {
+      color: var(--danger);
+    }
+
+    .bulk-dialog {
+      position: fixed;
+      inset: 0;
+      z-index: 50;
+      display: grid;
+      place-items: center;
+      padding: 24px;
+      background: rgba(4, 8, 13, 0.72);
+      backdrop-filter: blur(10px);
+    }
+
+    .bulk-dialog[hidden] {
+      display: none;
+    }
+
+    .bulk-dialog-panel {
+      width: min(1180px, calc(100vw - 32px));
+      max-height: min(86vh, 900px);
+      display: grid;
+      grid-template-rows: auto auto 1fr auto;
+      overflow: hidden;
+      background: rgba(13, 21, 33, 0.98);
+    }
+
+    .bulk-dialog-head,
+    .bulk-dialog-controls,
+    .bulk-dialog-actions {
+      padding: 18px 20px;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .bulk-dialog-head {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 18px;
+    }
+
+    .bulk-dialog-title {
+      margin: 0 0 6px;
+      font-size: 1.25rem;
+      letter-spacing: -0.03em;
+    }
+
+    .bulk-dialog-copy,
+    .bulk-dialog-status {
+      margin: 0;
+      color: var(--muted);
+      line-height: 1.45;
+    }
+
+    .bulk-dialog-close {
+      min-width: 42px;
+      min-height: 42px;
+      padding: 0;
+      border-radius: 999px;
+    }
+
+    .bulk-dialog-controls {
+      display: grid;
+      gap: 12px;
+    }
+
+    .bulk-same-toggle {
+      width: fit-content;
+      max-width: 100%;
+    }
+
+    .bulk-list {
+      display: grid;
+      gap: 12px;
+      padding: 18px 20px;
+      overflow-y: auto;
+    }
+
+    .bulk-row {
+      display: grid;
+      grid-template-columns: minmax(180px, 1fr) minmax(220px, 1.35fr) minmax(160px, 0.75fr) minmax(120px, 0.55fr);
+      gap: 10px;
+      padding: 14px;
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      background: rgba(255, 255, 255, 0.04);
+    }
+
+    .bulk-row-magnet {
+      min-width: 0;
+      color: var(--muted);
+      font-size: 0.82rem;
+      line-height: 1.45;
+    }
+
+    .bulk-row-magnet strong {
+      display: block;
+      margin-bottom: 6px;
+      color: var(--ink);
+      font-size: 0.9rem;
+    }
+
+    .bulk-row-field {
+      display: grid;
+      gap: 7px;
+      min-width: 0;
+    }
+
+    .bulk-nas-field { grid-column: 1 / -1; }
+
+    .bulk-row-field span {
+      color: var(--muted);
+      font-size: 0.78rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+
+    .bulk-dialog-actions {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      border-top: 1px solid var(--line);
+      border-bottom: none;
+    }
+
+    .bulk-dialog-status.error {
+      color: var(--danger);
+    }
+
+    .final-destination-dialog {
+      width: min(640px, calc(100vw - 24px));
+      max-height: 90vh;
+      padding: 0;
+      color: var(--ink);
+      background: rgba(13, 21, 33, 0.98);
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      overflow-y: auto;
+    }
+
+    .final-destination-dialog::backdrop {
+      background: rgba(4, 8, 13, 0.72);
+      backdrop-filter: blur(10px);
+    }
+
+    .final-destination-dialog .bulk-dialog-copy {
+      overflow-wrap: anywhere;
+    }
+
+    .edit-final-destination {
+      margin-top: 8px;
+      min-height: 44px;
+      font-family: inherit;
+      font-size: 0.82rem;
+    }
+
+    .jobs-panel {
+      padding: 22px 24px 24px;
+    }
+
+    .jobs-head {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 14px;
+    }
+
+    .jobs-title {
+      margin: 0;
+      font-size: 1.35rem;
+      letter-spacing: -0.03em;
+    }
+
+    .jobs-meta {
+      color: var(--muted);
+      font-size: 0.88rem;
+    }
+
+    .jobs-toolbar {
+      display: grid;
+      gap: 12px;
+      margin-bottom: 14px;
+      padding: 14px;
+      border-radius: 18px;
+      border: 1px solid var(--line);
+      background: rgba(255, 255, 255, 0.04);
+    }
+
+    .jobs-toolbar-row {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+    }
+
+    .jobs-toolbar-group {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .bulk-toggle,
+    .toolbar-field {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 12px;
+      border-radius: 999px;
+      border: 1px solid var(--line);
+      background: rgba(255, 255, 255, 0.04);
+      color: var(--ink);
+      font-size: 0.9rem;
+    }
+
+    .bulk-toggle input,
+    .job-checkbox {
+      appearance: auto;
+      width: 18px;
+      height: 18px;
+      padding: 0;
+      border: none;
+      border-radius: 4px;
+      background: transparent;
+      box-shadow: none;
+      accent-color: var(--accent);
+      cursor: pointer;
+    }
+
+    .toolbar-field span {
+      color: var(--muted);
+      font-size: 0.86rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+
+    .toolbar-select {
+      min-width: 150px;
+      width: auto;
+      padding: 9px 38px 9px 12px;
+      border-radius: 999px;
+    }
+
+    .toolbar-button {
+      padding: 10px 14px;
+      font-size: 0.88rem;
+      font-weight: 700;
+    }
+
+    .toolbar-button.danger-soft {
+      background: rgba(255, 114, 114, 0.1);
+      color: var(--danger);
+    }
+
+    .jobs-toolbar-status {
+      color: var(--muted);
+      font-size: 0.88rem;
+      line-height: 1.45;
+    }
+
+    .jobs-toolbar-status.error {
+      color: var(--danger);
+    }
+
+    .scanner-toolbar-row {
+      padding-top: 12px;
+      border-top: 1px solid var(--line);
+    }
+
+    .scanner-status-card {
+      display: grid;
+      gap: 3px;
+      flex: 1 1 360px;
+      min-width: 280px;
+      padding: 11px 13px;
+      border-radius: 14px;
+      border: 1px solid rgba(222, 125, 54, 0.22);
+      background: linear-gradient(135deg, rgba(222, 125, 54, 0.1), rgba(255, 255, 255, 0.025));
+    }
+
+    .scanner-status-card strong {
+      color: var(--ink);
+      font-size: 0.9rem;
+    }
+
+    .scanner-status-card span,
+    .scanner-status-card small {
+      color: var(--muted);
+      line-height: 1.4;
+    }
+
+    .scanner-status-card span {
+      font-size: 0.88rem;
+    }
+
+    .scanner-status-card small {
+      font-size: 0.78rem;
+    }
+
+    .scanner-status-card.error span,
+    .scanner-status-card.error small {
+      color: var(--danger);
+    }
+
+    .scanner-status-card.warning {
+      border-color: rgba(233, 178, 77, 0.42);
+      background: linear-gradient(135deg, rgba(233, 178, 77, 0.12), rgba(255, 255, 255, 0.025));
+    }
+
+    .scanner-status-card.warning span,
+    .scanner-status-card.warning small,
+    .scanner-status-card.maintenance span,
+    .scanner-status-card.maintenance small {
+      color: var(--warning);
+    }
+
+    .scanner-status-card.maintenance {
+      border-color: rgba(233, 178, 77, 0.42);
+    }
+
+    .scanner-controls {
+      display: grid;
+      gap: 8px;
+      flex: 1 1 520px;
+    }
+
+    .scanner-control-group {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: flex-end;
+      gap: 8px;
+    }
+
+    .toolbar-group-label {
+      color: var(--muted);
+      font-size: 0.72rem;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
+    .scan-activity {
+      min-width: 260px;
+    }
+
+    .scan-activity > * + * {
+      margin-top: 7px;
+    }
+
+    .scan-activity-copy {
+      line-height: 1.42;
+    }
+
+    .scan-progress-meta {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      gap: 6px 12px;
+      color: var(--muted);
+      font-size: 0.76rem;
+    }
+
+    .scan-progress-track {
+      position: relative;
+      height: 8px;
+      overflow: hidden;
+      border-radius: 999px;
+      background: rgba(152, 168, 191, 0.15);
+    }
+
+    .scan-progress-fill {
+      height: 100%;
+      border-radius: inherit;
+      background: linear-gradient(90deg, var(--accent-deep), var(--accent), #f4bd68);
+      transition: width 300ms ease;
+    }
+
+    .scan-progress-track.is-active::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      width: 30%;
+      background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.32), transparent);
+      animation: scan-current-file 1.6s linear infinite;
+    }
+
+    .scan-current-note {
+      color: var(--muted);
+      font-size: 0.73rem;
+      line-height: 1.35;
+    }
+
+    @keyframes scan-current-file {
+      from { transform: translateX(-110%); }
+      to { transform: translateX(440%); }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .scan-progress-track.is-active::after {
+        animation: none;
+        opacity: 0.35;
+      }
+    }
+
+    .table-wrap {
+      display: block;
+      overflow-x: auto;
+      overflow-y: auto;
+      -webkit-overflow-scrolling: touch;
+      scrollbar-color: rgba(152, 168, 191, 0.45) transparent;
+      border-radius: 20px;
+      border: 1px solid var(--line);
+      background: rgba(255, 255, 255, 0.03);
+      overscroll-behavior-x: contain;
+    }
+
+    .table-wrap::-webkit-scrollbar {
+      height: 12px;
+      width: 12px;
+    }
+
+    .table-wrap::-webkit-scrollbar-thumb {
+      background: rgba(152, 168, 191, 0.35);
+      border-radius: 999px;
+    }
+
+    .table-wrap::-webkit-scrollbar-track {
+      background: rgba(255, 255, 255, 0.02);
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      min-width: 1280px;
+    }
+
+    th,
+    td {
+      padding: 13px 14px;
+      border-bottom: 1px solid var(--line);
+      text-align: left;
+      vertical-align: top;
+      overflow-wrap: normal;
+      word-break: normal;
+    }
+
+    th {
+      position: sticky;
+      top: 0;
+      background: rgba(18, 29, 45, 0.96);
+      font-size: 0.8rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--muted);
+      z-index: 1;
+      white-space: nowrap;
+    }
+
+    tbody tr:last-child td {
+      border-bottom: none;
+    }
+
+    tbody tr:hover {
+      background: rgba(222, 125, 54, 0.07);
+    }
+
+    .mono {
+      font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+      font-size: 0.86rem;
+      line-height: 1.45;
+    }
+
+    .cell-id,
+    .cell-name,
+    .cell-final-parent,
+    .cell-hash,
+    .cell-last-error {
+      overflow-wrap: anywhere;
+      word-break: break-word;
+    }
+
+    .cell-select {
+      width: 56px;
+      min-width: 56px;
+      text-align: center;
+      vertical-align: middle;
+      white-space: nowrap;
+    }
+
+    .cell-id {
+      min-width: 170px;
+      max-width: 220px;
+    }
+
+    .cell-name {
+      min-width: 250px;
+    }
+
+    .cell-state {
+      min-width: 126px;
+      white-space: nowrap;
+      vertical-align: middle;
+    }
+
+    .cell-final-parent {
+      min-width: 230px;
+    }
+
+    .cell-stage {
+      min-width: 90px;
+      white-space: nowrap;
+      vertical-align: middle;
+    }
+
+    .cell-hash {
+      min-width: 210px;
+      max-width: 280px;
+    }
+
+    .cell-last-error {
+      min-width: 320px;
+      max-width: 460px;
+    }
+
+    .activity-error {
+      color: var(--danger);
+    }
+
+    .activity-detail {
+      color: var(--muted);
+    }
+
+    .state-pill {
+      display: inline-flex;
+      align-items: center;
+      padding: 6px 10px;
+      border-radius: 999px;
+      font-size: 0.8rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      background: rgba(32, 22, 15, 0.08);
+      color: var(--muted);
+      white-space: nowrap;
+    }
+
+    .state-pill[data-state="downloading"],
+    .state-pill[data-state="waiting_for_qbt_hash"],
+    .state-pill[data-state="retrying"],
+    .state-pill[data-state="scan_pending"] {
+      background: rgba(181, 93, 45, 0.12);
+      color: var(--accent-deep);
+    }
+
+    .state-pill[data-state="waiting_for_local_space"],
+    .state-pill[data-state="waiting_for_nas"],
+    .state-pill[data-state="scan_paused"] {
+      background: rgba(233, 178, 77, 0.14);
+      color: var(--warning);
+    }
+
+    .state-pill[data-state="download_complete"],
+    .state-pill[data-state="completion_event_received"],
+    .state-pill[data-state="scanning"],
+    .state-pill[data-state="scan_clean"],
+    .state-pill[data-state="promoting"] {
+      background: rgba(155, 95, 17, 0.12);
+      color: var(--warning);
+    }
+
+    .state-pill[data-state="done"] {
+      background: rgba(29, 107, 73, 0.14);
+      color: var(--success);
+    }
+
+    .state-pill[data-state="scan_infected"],
+    .state-pill[data-state="quarantining_infected"],
+    .state-pill[data-state="deleting_infected"],
+    .state-pill[data-state="infected_held"],
+    .state-pill[data-state="infected_quarantined"],
+    .state-pill[data-state="infected_deleted"],
+    .state-pill[data-state="error"] {
+      background: rgba(153, 47, 47, 0.14);
+      color: var(--danger);
+    }
+
+    tbody tr.row-selected {
+      background: rgba(222, 125, 54, 0.09);
+    }
+
+    .empty-row td {
+      text-align: center;
+      color: var(--muted);
+      padding: 28px 14px;
+    }
+
+    @media (max-width: 720px) {
+      .shell {
+        width: calc(100vw - 16px);
+        margin: 16px auto 28px;
+      }
+
+      .page-tools {
+        margin-bottom: 10px;
+      }
+
+      .settings-trigger {
+        justify-content: center;
+      }
+
+      .settings-head,
+      .settings-content {
+        padding-left: 16px;
+        padding-right: 16px;
+      }
+
+      .settings-list {
+        grid-template-columns: 1fr;
+      }
+
+      .hero-copy,
+      .form-panel,
+      .jobs-panel {
+        padding: 18px;
+      }
+
+      .hero-mobile-summary {
+        display: block;
+      }
+
+      .hero-details:not([open]) .hero-copy {
+        display: none;
+      }
+
+      .meta-grid,
+      .field-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .actions-row {
+        flex-direction: column;
+        align-items: stretch;
+      }
+
+      .button-primary,
+      .button-secondary {
+        width: 100%;
+      }
+
+      .combo-menu {
+        position: static;
+        margin-top: 8px;
+        max-height: 220px;
+      }
+
+      table {
+        min-width: 1120px;
+      }
+
+      .jobs-meta {
+        line-height: 1.45;
+      }
+
+      .jobs-toolbar-row,
+      .jobs-toolbar-group {
+        align-items: stretch;
+      }
+
+      .bulk-toggle,
+      .toolbar-field {
+        width: 100%;
+        justify-content: space-between;
+      }
+
+      .toolbar-select {
+        flex: 1 1 auto;
+        min-width: 0;
+      }
+
+      .toolbar-button {
+        width: 100%;
+      }
+
+      .scanner-status-card {
+        width: 100%;
+        min-width: 0;
+      }
+
+      .scanner-controls,
+      .scanner-control-group {
+        width: 100%;
+      }
+
+      .scanner-control-group {
+        align-items: stretch;
+        justify-content: stretch;
+      }
+
+      .toolbar-group-label {
+        width: 100%;
+      }
+
+      .bulk-dialog {
+        padding: 10px;
+      }
+
+      .bulk-dialog-panel {
+        width: calc(100vw - 20px);
+        max-height: 92vh;
+      }
+
+      .bulk-dialog-head,
+      .bulk-dialog-controls,
+      .bulk-dialog-actions,
+      .bulk-list {
+        padding: 14px;
+      }
+
+      .bulk-dialog-close {
+        width: 42px;
+        flex: 0 0 auto;
+        justify-self: end;
+      }
+
+      .bulk-row {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    @media (min-width: 1520px) {
+      .top-layout {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        align-items: stretch;
+      }
+
+      .top-layout .hero-copy {
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+      }
+
+      .top-layout .hero-copy > .eyebrow,
+      .top-layout .hero-copy > h1,
+      .top-layout .hero-copy > .lede,
+      .top-layout .hero-copy > .meta-grid {
+        width: min(100%, 720px);
+        margin-left: auto;
+        margin-right: auto;
+      }
+
+      .top-layout .hero-copy > .lede {
+        max-width: none;
+      }
+
+      .top-layout .meta-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    @media (min-width: 721px) {
+      .hero-mobile-summary {
+        display: none;
+      }
+    }
+    {% include "settings.css" %}
+  </style>
+</head>
+<body>
+  <div class="shell">
+    <div class="page-tools">
+      <button
+        id="settings-open-button"
+        class="button-secondary settings-trigger"
+        type="button"
+        aria-haspopup="dialog"
+        aria-controls="settings-dialog"
+        aria-expanded="false">
+        <span class="settings-trigger-icon" aria-hidden="true">⚙</span>
+        Settings &amp; Help
+      </button>
+    </div>
+    <div class="top-layout">
+      <details id="hero-details" class="hero hero-details panel" open>
+        <summary class="hero-mobile-summary">
+          <div class="hero-mobile-summary-row">
+            <div class="hero-mobile-summary-text">
+              <div class="eyebrow">Torrent Intake Control Plane</div>
+              <h2 class="hero-mobile-summary-title">{{ title }}</h2>
+              <p class="hero-mobile-summary-copy">Tap to view the current staging roots, overflow policy, and environment summary.</p>
+            </div>
+            <span class="hero-mobile-summary-icon" aria-hidden="true">⌄</span>
+          </div>
+        </summary>
+        <section class="hero-copy">
+          <div class="eyebrow">Torrent Intake Control Plane</div>
+          <h1>{{ title }}</h1>
+          <p class="lede">
+            Submit magnets or .torrent files, stage them safely, scan on completion, and only then promote content into the final library.
+            The form defaults to the configured main final root so you are not retyping the same prefix for every intake.
+          </p>
+          <div class="meta-grid">
+            <div class="meta-card">
+              <span class="meta-label">Final Root</span>
+              <span class="meta-value">{{ settings.final_parent_prefix }}</span>
+            </div>
+            <div class="meta-card">
+              <span class="meta-label">Extra Final Roots</span>
+              <span class="meta-value">
+                {% if settings.extra_final_parent_prefixes %}
+                  {{ settings.extra_final_parent_prefixes | join(', ') }}
+                {% else %}
+                  None configured
+                {% endif %}
+              </span>
+            </div>
+            <div class="meta-card">
+              <span class="meta-label">Local Stage</span>
+              <span class="meta-value">{{ settings.local_staging_root }}</span>
+            </div>
+            <div class="meta-card">
+              <span class="meta-label">Default NAS Stage</span>
+              <span class="meta-value">{{ settings.default_nas_location.label }} · {{ settings.default_nas_location.path }}</span>
+            </div>
+            <div class="meta-card">
+              <span class="meta-label">Aggregate Overflow Policy</span>
+              <span class="meta-value">{{ settings.local_overflow_policy }}</span>
+            </div>
+            <div class="meta-card">
+              <span class="meta-label">Local Max Before NAS</span>
+              <span class="meta-value">{{ settings.local_max_gib }} GiB</span>
+            </div>
+            <div class="meta-card">
+              <span class="meta-label">Local Free Buffer</span>
+              <span class="meta-value">{{ settings.local_free_space_buffer_gib }} GiB</span>
+            </div>
+            <div class="meta-card">
+              <span class="meta-label">qB Transfer</span>
+              <span id="qbt-transfer-summary" class="meta-value">Checking transfer status...</span>
+            </div>
+            <div class="meta-card">
+              <span class="meta-label">qB WebUI</span>
+              {% if settings.qbt_web_url %}
+                <a class="button-secondary meta-action" href="{{ settings.qbt_web_url }}" target="_blank" rel="noopener noreferrer">Open qBittorrent</a>
+              {% else %}
+                <span class="meta-value">Set TI_QBT_WEB_URL to show a browser-safe link.</span>
+              {% endif %}
+            </div>
+          </div>
+        </section>
+      </details>
+
+      <div class="panel form-panel">
+        <h2 class="section-title">New Intake</h2>
+        <p class="section-copy">Paste magnets, choose .torrent files, or combine both. Confirm the destination and submit. Multiple items use the same bulk review, with shared or individual destination settings.</p>
+
+        <form id="job-form">
+          <div class="field-grid">
+            <label class="field-wide">
+              <span>Magnet Links (optional when uploading files)</span>
+              <textarea id="magnet-input" class="mono" name="magnet_uri" placeholder="magnet:?xt=urn:btih:..." spellcheck="false"></textarea>
+              <span class="hint">Paste one or more magnets on separate lines. Up to 50 magnets and .torrent files combined per submission.</span>
+            </label>
+
+            <div class="field-wide">
+              <label for="torrent-file-input">Torrent Files</label>
+              <input id="torrent-file-input" type="file" accept=".torrent,application/x-bittorrent" multiple aria-describedby="torrent-file-help torrent-file-summary">
+              <span id="torrent-file-help" class="hint">Choose one or more .torrent metadata files; you can choose more files again to add to the selection. Maximum 32 MiB per metadata file, not per download. Original tracker information is preserved.</span>
+              <span id="torrent-file-summary" class="hint" role="status" aria-live="polite">No .torrent files selected.</span>
+              <button id="torrent-files-clear" class="button-secondary" type="button" hidden>Clear selected files</button>
+            </div>
+
+            <label class="field-wide">
+              <span>Final Parent Path</span>
+              <input
+                id="final-parent-input"
+                class="mono"
+                type="text"
+                name="final_parent"
+                list="final-parent-suggestions"
+                autocomplete="off"
+                data-default-prefix="{{ settings.final_parent_prefix }}"
+                placeholder="{{ settings.final_parent_prefix }}/"
+                required>
+              <span class="hint">Autocomplete suggests live directories under the allowed final roots. Clear the field and type `/` to browse those roots, while the default prefill stays on the main root.</span>
+            </label>
+
+            <label class="field">
+              <span>Final Category</span>
+              <div id="final-category-combo" class="combo-field" data-open="false">
+                <div class="combo-control">
+                  <input
+                    id="final-category-input"
+                    class="combo-input"
+                    type="text"
+                    name="final_category"
+                    placeholder="Media"
+                    autocomplete="off"
+                    autocapitalize="none"
+                    aria-autocomplete="list"
+                    aria-expanded="false"
+                    aria-controls="category-menu">
+                  <button id="final-category-toggle" class="combo-toggle" type="button" aria-label="Show existing category suggestions">⌄</button>
+                </div>
+                <div id="category-menu" class="combo-menu" role="listbox" hidden></div>
+              </div>
+              <span class="hint">Optional. Existing qB categories are suggested and missing categories can be auto-created if enabled.</span>
+            </label>
+
+            <label class="field">
+              <span>Staging Preference</span>
+              <select id="staging-preference-select" name="staging_preference">
+                <option value="local">Local</option>
+                <option value="nas">NAS</option>
+              </select>
+              <span class="hint">Local is default. Torrents above the local max use NAS intake staging automatically, while smaller local jobs follow the aggregate overflow policy. Local jobs retain {{ settings.default_nas_location.label }} as their NAS fallback when submitted. Final promotion still uses the chosen destination.</span>
+            </label>
+
+            <label id="nas-staging-field" class="field-wide" hidden>
+              <span>NAS Staging Location</span>
+              <select id="nas-staging-select" name="nas_staging_id" disabled>
+                {% for location in settings.effective_nas_locations %}
+                <option value="{{ location.id }}" data-label="{{ location.label }}" data-path="{{ location.path }}" data-mount-marker="{{ location.mount_marker or '' }}" {% if location.id == settings.default_nas_location.id %}selected{% endif %}>{{ location.label }} · {{ location.path }}</option>
+                {% endfor %}
+              </select>
+              <span class="hint">Temporary download staging only. Intake and qBittorrent must see this same mounted container path.</span>
+            </label>
+
+            <div class="field-wide">
+              <label for="custom-tag-input">qBittorrent Tags <span class="hint">(optional)</span></label>
+              <div id="custom-tag-picker" class="tag-picker" data-open="false">
+                <div id="selected-custom-tags" class="tag-chip-list" role="list" aria-label="Selected qBittorrent tags"></div>
+                <div class="tag-input-row">
+                  <input
+                    id="custom-tag-input"
+                    type="text"
+                    placeholder="Type to search or add a new tag"
+                    autocomplete="off"
+                    autocapitalize="none"
+                    role="combobox"
+                    aria-autocomplete="list"
+                    aria-expanded="false"
+                    aria-controls="custom-tag-menu"
+                    aria-describedby="custom-tag-help">
+                  <button id="custom-tag-add-button" class="tag-add-button" type="button">Add Tag</button>
+                </div>
+                <div id="custom-tag-menu" class="combo-menu" role="listbox" aria-label="Available qBittorrent tags" aria-multiselectable="true" hidden></div>
+              </div>
+              <span id="custom-tag-help" class="hint">Choose existing qBittorrent tags or type a new tag and use Add Tag. A typed tag is created in qBittorrent only when the torrent is submitted. These are descriptive tags that remain after promotion; Torrent Intake's private tracking tags are added separately and never shown here. Maximum {{ max_custom_tags }} tags, {{ max_custom_tag_length }} characters each, and no commas.</span>
+              <span id="custom-tag-status" class="tag-picker-status" role="status" aria-live="polite"></span>
+            </div>
+          </div>
+
+          <div class="actions-row">
+            <button id="submit-button" class="button-primary" type="submit">Submit Intake Job</button>
+            <button id="refresh-jobs-button" class="button-secondary" type="button">Refresh Jobs</button>
+            <span id="form-status" class="form-status"></span>
+          </div>
+        </form>
+
+        <datalist id="final-parent-suggestions"></datalist>
+      </div>
+    </div>
+
+    <section id="bulk-dialog" class="bulk-dialog" aria-labelledby="bulk-dialog-title" hidden>
+      <div class="bulk-dialog-panel panel" role="dialog" aria-modal="true">
+        <div class="bulk-dialog-head">
+          <div>
+            <h2 id="bulk-dialog-title" class="bulk-dialog-title">Review Bulk Intake</h2>
+            <p id="bulk-dialog-copy" class="bulk-dialog-copy">Each magnet or .torrent file becomes its own tracked intake job.</p>
+          </div>
+          <button id="bulk-dialog-close" class="button-secondary bulk-dialog-close" type="button" aria-label="Close bulk review">×</button>
+        </div>
+        <div class="bulk-dialog-controls">
+          <label class="bulk-toggle bulk-same-toggle">
+            <input id="bulk-use-same-settings" type="checkbox" checked>
+            <span>Use the form destination, category, and staging choice for every torrent</span>
+          </label>
+          <span id="bulk-tags-summary" class="hint">Tags selected in the main form apply to every torrent in this bulk submission.</span>
+        </div>
+        <div id="bulk-list" class="bulk-list"></div>
+        <div class="bulk-dialog-actions">
+          <span id="bulk-dialog-status" class="bulk-dialog-status"></span>
+          <div class="jobs-toolbar-group">
+            <button id="bulk-dialog-cancel" class="button-secondary toolbar-button" type="button">Cancel</button>
+            <button id="bulk-dialog-submit" class="button-primary toolbar-button" type="button">Add Bulk Torrents</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <dialog id="final-destination-dialog" class="final-destination-dialog" aria-labelledby="final-destination-title" aria-describedby="final-destination-help">
+      <form id="final-destination-form">
+        <div class="bulk-dialog-head">
+          <div>
+            <h2 id="final-destination-title" class="bulk-dialog-title">Edit final location</h2>
+            <p id="final-destination-job" class="bulk-dialog-copy"></p>
+          </div>
+        </div>
+        <div class="bulk-dialog-controls">
+          <p id="final-destination-help" class="bulk-dialog-copy">Change where this torrent will go after a successful scan. Nothing moves now; download staging and final category stay unchanged. Edit before download completion, or choose Pause After File and wait for Scan paused. Saving a paused scan keeps its checkpoints and leaves it paused; choose Resume Scan when ready.</p>
+          <label>
+            <span>Final parent path</span>
+            <input id="edit-final-parent-input" class="mono" type="text" list="edit-final-parent-suggestions" autocomplete="off" spellcheck="false" maxlength="4096" required aria-describedby="edit-final-parent-help">
+            <span id="edit-final-parent-help" class="hint">Use a container path under your allowed final roots, not a VM or NAS host path. A missing subfolder can be created during promotion when its configured storage root is available. The torrent's own file or folder name is added beneath this parent.</span>
+          </label>
+          <datalist id="edit-final-parent-suggestions"></datalist>
+          <p id="final-destination-status" class="bulk-dialog-status" role="status" aria-live="polite"></p>
+        </div>
+        <div class="bulk-dialog-actions">
+          <button id="final-destination-cancel" class="button-secondary" type="button">Cancel</button>
+          <button id="final-destination-save" class="button-primary" type="submit">Save final location</button>
+        </div>
+      </form>
+    </dialog>
+
+    <div class="panel jobs-panel">
+        <div class="jobs-head">
+          <div>
+            <h2 class="jobs-title">Recent Jobs</h2>
+            <div class="jobs-meta" id="jobs-meta">Waiting for first refresh. Swipe sideways on narrow screens to view all columns.</div>
+          </div>
+        </div>
+
+        <div class="jobs-toolbar">
+          <div class="jobs-toolbar-row">
+            <div class="jobs-toolbar-group">
+              <label class="bulk-toggle">
+                <input id="select-all-jobs" type="checkbox">
+                <span>Select visible jobs</span>
+              </label>
+              <label class="toolbar-field">
+                <span>Sort</span>
+                <select id="jobs-sort-select" class="toolbar-select">
+                  <option value="newest">Newest first</option>
+                  <option value="oldest">Oldest first</option>
+                </select>
+              </label>
+              <label class="toolbar-field">
+                <span>View</span>
+                <select id="jobs-filter-select" class="toolbar-select">
+                  <option value="all">All jobs</option>
+                  <option value="downloading">Downloads</option>
+                  <option value="scan_queue">Scan queue</option>
+                  <option value="scan_paused">Paused scans</option>
+                  <option value="failed">Failed</option>
+                  <option value="completed">Completed</option>
+                </select>
+              </label>
+            </div>
+            <div class="jobs-toolbar-group">
+              <button id="retry-selected-button" class="button-secondary toolbar-button" type="button">Retry Failed Selected</button>
+              <label class="toolbar-field nas-move-field">
+                <span>NAS staging target</span>
+                <select id="move-nas-staging-select" class="toolbar-select" aria-label="NAS staging target for selected queued jobs">
+                  {% for location in settings.effective_nas_locations %}
+                  <option value="{{ location.id }}" {% if location.id == settings.default_nas_location.id %}selected{% endif %}>{{ location.label }} · {{ location.path }}</option>
+                  {% endfor %}
+                </select>
+              </label>
+              <button
+                id="move-selected-to-nas-button"
+                class="button-secondary toolbar-button"
+                type="button"
+                title="For selected locally staged jobs waiting for local space or an unavailable NAS fallback, pause qBittorrent, switch the active download staging path to the selected NAS staging location, and resume downloading. This does not perform the final clean-library promotion or change the chosen final destination."
+                aria-describedby="nas-staging-action-help"
+              >Use NAS Staging For Selected</button>
+              <span id="nas-staging-action-help" class="visually-hidden">This action changes only the temporary intake and download staging location for locally staged jobs waiting for local space or an unavailable NAS fallback. Scanning and promotion to the chosen final library destination still happen later.</span>
+              <button id="delete-selected-button" class="button-secondary toolbar-button danger-soft" type="button">Forget Selected</button>
+              <button id="retry-failed-button" class="button-secondary toolbar-button" type="button">Retry All Failed</button>
+              <button id="clear-completed-button" class="button-secondary toolbar-button" type="button">Clear All Completed</button>
+              <button id="clear-failed-button" class="button-secondary toolbar-button danger-soft" type="button">Clear All Failed</button>
+            </div>
+          </div>
+          <div class="jobs-toolbar-row scanner-toolbar-row">
+            <div class="scanner-status-card" id="scanner-status-card">
+              <strong>Scan Queue</strong>
+              <span id="scanner-status">Loading scanner status...</span>
+              <small id="scanner-health">Checking ClamAV engine and signature age...</small>
+            </div>
+            <div class="scanner-controls">
+              <div class="scanner-control-group">
+                <span class="toolbar-group-label">Global scanner</span>
+                <label class="toolbar-field">
+                  <span>Slots</span>
+                  <select id="scanner-slots-select" class="toolbar-select" aria-label="Concurrent scan slots">
+                    <option value="2">2 (default)</option>
+                  </select>
+                </label>
+                <button id="scanner-maintenance-button" class="button-secondary toolbar-button" type="button" title="Stop new scans and let active scans finish their current file before ClamAV maintenance.">Start Maintenance</button>
+              </div>
+              <div class="scanner-control-group">
+                <span class="toolbar-group-label">Selected scans</span>
+                <button id="scan-next-button" class="button-secondary toolbar-button" type="button" title="Move selected queued scans ahead without resuming paused scans.">Prioritize Scan</button>
+                <button id="pause-scan-button" class="button-secondary toolbar-button" type="button" title="Queued scans pause immediately. An active scan pauses safely after its current file finishes. Wait for Scan paused before editing an eligible job's final location.">Pause After File</button>
+                <button id="resume-scan-button" class="button-secondary toolbar-button" type="button">Resume Scan</button>
+              </div>
+            </div>
+          </div>
+          <div class="jobs-toolbar-status" id="jobs-toolbar-status">No jobs selected.</div>
+        </div>
+
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th class="cell-select">Sel</th>
+                <th class="cell-id">ID</th>
+                <th class="cell-name">Name</th>
+                <th class="cell-state">State</th>
+                <th class="cell-final-parent">Final Parent</th>
+                <th class="cell-stage">Stage</th>
+                <th class="cell-hash">Hash</th>
+                <th class="cell-last-error">Activity / Error</th>
+              </tr>
+            </thead>
+            <tbody id="jobs-tbody">
+              {% for job in jobs %}
+              <tr>
+                <td class="cell-select"><input class="job-checkbox" type="checkbox" data-job-id="{{ job.id }}"></td>
+                <td class="mono cell-id">{{ job.id }}</td>
+                <td class="cell-name">{{ job.torrent_name or job.torrent_file_name or '-' }}</td>
+                <td class="cell-state"><span class="state-pill" data-state="{{ job.state }}">{{ 'Waiting for NAS mount' if job.state == 'waiting_for_nas' else job.state }}</span></td>
+                <td class="mono cell-final-parent"><div>{{ job.final_parent }}</div>{% if job.can_edit_final_destination %}<button type="button" class="button-secondary edit-final-destination" data-edit-final-destination="{{ job.id }}" data-final-parent="{{ job.final_parent }}" data-torrent-name="{{ job.torrent_name or job.torrent_file_name or job.id }}" aria-haspopup="dialog" aria-controls="final-destination-dialog">Edit final location</button>{% endif %}</td>
+                <td class="cell-stage">{{ job.staging_actual or job.staging_preference }}{% if job.nas_staging_id %}<small>{{ 'NAS' if (job.staging_actual or job.staging_preference) == 'nas' else 'NAS fallback' }}: {{ job.nas_staging_label or job.nas_staging_id }} · {{ job.nas_staging_path or '' }}</small>{% endif %}</td>
+                <td class="mono cell-hash">{{ job.qbt_hash or '-' }}</td>
+                <td class="cell-last-error{% if job.last_error %} activity-error{% endif %}">{{ job.last_error or job.activity_summary or '-' }}
+                  {% if job.hook_status %}<details class="job-hook-result" data-job-id="{{ job.id }}"><summary>{{ 'Copy' if job.hook_kind == 'copy' else 'Script' }} status: {{ job.hook_status }}</summary>{% if job.hook_kind == 'copy' and job.hook_destination %}<p>Copy destination: {{ job.hook_destination.rstrip('/') }}{% if job.hook_copy_relative_path %}/{{ job.hook_copy_relative_path }}{% endif %}</p>{% if job.hook_copy_source_root %}<p>Saved copy rule: {{ job.hook_copy_source_root }} → {{ job.hook_destination }}</p>{% endif %}{% endif %}{% if job.hook_error %}<p>{{ job.hook_error }}</p>{% endif %}{% if job.hook_exit_code is not none %}<p>Exit code: {{ job.hook_exit_code }}</p>{% endif %}{% if job.hook_output %}<p>{{ 'Copy' if job.hook_kind == 'copy' else 'Script' }} output:</p><pre>{{ job.hook_output }}</pre>{% endif %}</details>{% endif %}
+                </td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+    </div>
+  </div>
+
+  {% include "settings.html" %}
+
+  <script>
+    {% include "settings.js" %}
+    const heroDetails = document.getElementById('hero-details');
+    const settingsOpenButton = document.getElementById('settings-open-button');
+    const settingsDialog = document.getElementById('settings-dialog');
+    const settingsDrawer = document.getElementById('settings-drawer');
+    const settingsCloseButton = document.getElementById('settings-close-button');
+    const settingsSearch = document.getElementById('settings-search');
+    const settingsRuntimeControlsButton = document.getElementById('settings-runtime-controls-button');
+    const jobForm = document.getElementById('job-form');
+    const stagingPreferenceSelect = document.getElementById('staging-preference-select');
+    const nasStagingSelect = document.getElementById('nas-staging-select');
+    const moveNasStagingSelect = document.getElementById('move-nas-staging-select');
+    const finalParentInput = document.getElementById('final-parent-input');
+    const finalCategoryInput = document.getElementById('final-category-input');
+    const finalCategoryCombo = document.getElementById('final-category-combo');
+    const finalCategoryToggle = document.getElementById('final-category-toggle');
+    const categoryMenu = document.getElementById('category-menu');
+    const customTagPicker = document.getElementById('custom-tag-picker');
+    const customTagInput = document.getElementById('custom-tag-input');
+    const customTagAddButton = document.getElementById('custom-tag-add-button');
+    const customTagMenu = document.getElementById('custom-tag-menu');
+    const selectedCustomTagsContainer = document.getElementById('selected-custom-tags');
+    const customTagStatus = document.getElementById('custom-tag-status');
+    const magnetInput = document.getElementById('magnet-input');
+    const torrentFileInput = document.getElementById('torrent-file-input');
+    const torrentFileSummary = document.getElementById('torrent-file-summary');
+    const torrentFilesClear = document.getElementById('torrent-files-clear');
+    const formStatus = document.getElementById('form-status');
+    const submitButton = document.getElementById('submit-button');
+    const refreshJobsButton = document.getElementById('refresh-jobs-button');
+    const qbtTransferSummary = document.getElementById('qbt-transfer-summary');
+    const jobsMeta = document.getElementById('jobs-meta');
+    const jobsToolbarStatus = document.getElementById('jobs-toolbar-status');
+    const jobsTbody = document.getElementById('jobs-tbody');
+    const selectAllJobsCheckbox = document.getElementById('select-all-jobs');
+    const jobsSortSelect = document.getElementById('jobs-sort-select');
+    const jobsFilterSelect = document.getElementById('jobs-filter-select');
+    const retrySelectedButton = document.getElementById('retry-selected-button');
+    const moveSelectedToNasButton = document.getElementById('move-selected-to-nas-button');
+    const retryFailedButton = document.getElementById('retry-failed-button');
+    const deleteSelectedButton = document.getElementById('delete-selected-button');
+    const clearCompletedButton = document.getElementById('clear-completed-button');
+    const clearFailedButton = document.getElementById('clear-failed-button');
+    const scannerStatusCard = document.getElementById('scanner-status-card');
+    const scannerStatus = document.getElementById('scanner-status');
+    const scannerHealth = document.getElementById('scanner-health');
+    const scannerSlotsSelect = document.getElementById('scanner-slots-select');
+    const scannerMaintenanceButton = document.getElementById('scanner-maintenance-button');
+    const scanNextButton = document.getElementById('scan-next-button');
+    const pauseScanButton = document.getElementById('pause-scan-button');
+    const resumeScanButton = document.getElementById('resume-scan-button');
+    const bulkDialog = document.getElementById('bulk-dialog');
+    const bulkDialogCopy = document.getElementById('bulk-dialog-copy');
+    const bulkDialogClose = document.getElementById('bulk-dialog-close');
+    const bulkDialogCancel = document.getElementById('bulk-dialog-cancel');
+    const bulkDialogSubmit = document.getElementById('bulk-dialog-submit');
+    const bulkDialogStatus = document.getElementById('bulk-dialog-status');
+    const bulkUseSameSettings = document.getElementById('bulk-use-same-settings');
+    const bulkList = document.getElementById('bulk-list');
+    const bulkTagsSummary = document.getElementById('bulk-tags-summary');
+    const finalDestinationDialog = document.getElementById('final-destination-dialog');
+    const finalDestinationForm = document.getElementById('final-destination-form');
+    const editFinalParentInput = document.getElementById('edit-final-parent-input');
+    const finalDestinationSave = document.getElementById('final-destination-save');
+    const finalDestinationCancel = document.getElementById('final-destination-cancel');
+    const finalDestinationStatus = document.getElementById('final-destination-status');
+    const defaultFinalParentPrefix = finalParentInput.dataset.defaultPrefix || '/downloads';
+    const managedQbtTag = {{ settings.managed_tag | tojson }};
+    const maxCustomTags = {{ max_custom_tags }};
+    const maxCustomTagLength = {{ max_custom_tag_length }};
+    const privateJobTagPrefix = {{ private_job_tag_prefix | tojson }};
+    const maxTagSuggestions = 40;
+    const magnetUriPattern = /magnet:\?(?:(?!\s|magnet:\?).)+/gi;
+    const btihPattern = /(^|[?&])xt=urn:btih:([A-Za-z0-9]{32}|[A-Fa-f0-9]{40})($|&)/i;
+
+    let knownFinalPaths = [];
+    let knownCategories = [];
+    let knownCustomTags = [];
+    let selectedCustomTags = [];
+    let tagMenuOptions = [];
+    let activeTagOptionIndex = -1;
+    let latestJobs = [];
+    let selectedJobIds = new Set();
+    let jobsSortOrder = 'newest';
+    let jobsFilter = 'all';
+    let currentScannerStatus = null;
+    let selectedTorrentFiles = [];
+    let pendingBulkItems = [];
+    let bulkSubmitting = false;
+    let singleSubmitting = false;
+    let jobsToolbarFlashTimer = null;
+    let finalPathTimer = null;
+    let jobsRefreshTimer = null;
+    let jobsRequestInFlight = false;
+    let settingsReturnFocus = null;
+    let editingFinalDestination = null;
+    let finalDestinationSaving = false;
+    let editFinalPathTimer = null;
+    const mobileHeroMediaQuery = window.matchMedia('(max-width: 720px)');
+
+    function filterSettings() {
+      window.TISettings.filter();
+    }
+
+    function openSettingsDialog() {
+      if (!bulkDialog.hidden) closeBulkDialog();
+      settingsReturnFocus = document.activeElement;
+      settingsDialog.hidden = false;
+      settingsDialog.setAttribute('aria-hidden', 'false');
+      settingsOpenButton.setAttribute('aria-expanded', 'true');
+      document.body.classList.add('settings-open');
+      window.TISettings.onOpen();
+      filterSettings();
+      window.requestAnimationFrame(() => settingsCloseButton.focus({preventScroll: true}));
+    }
+
+    function closeSettingsDialog() {
+      if (settingsDialog.hidden) return;
+      settingsDialog.hidden = true;
+      settingsDialog.setAttribute('aria-hidden', 'true');
+      settingsOpenButton.setAttribute('aria-expanded', 'false');
+      document.body.classList.remove('settings-open');
+      if (settingsReturnFocus instanceof HTMLElement) settingsReturnFocus.focus();
+      settingsReturnFocus = null;
+    }
+
+    function normalizedDefaultPrefix(prefix) {
+      return prefix.endsWith('/') ? prefix : `${prefix}/`;
+    }
+
+    if (!finalParentInput.value.trim()) {
+      finalParentInput.value = normalizedDefaultPrefix(defaultFinalParentPrefix);
+    }
+
+    function setFormStatus(message, isError = false) {
+      formStatus.textContent = message || '';
+      formStatus.classList.toggle('error', Boolean(isError));
+    }
+
+    function setJobsToolbarStatus(message, isError = false) {
+      jobsToolbarStatus.textContent = message || '';
+      jobsToolbarStatus.classList.toggle('error', Boolean(isError));
+    }
+
+    function flashJobsToolbarStatus(message, isError = false) {
+      if (jobsToolbarFlashTimer) clearTimeout(jobsToolbarFlashTimer);
+      setJobsToolbarStatus(message, isError);
+      jobsToolbarFlashTimer = setTimeout(() => {
+        jobsToolbarFlashTimer = null;
+        updateJobsToolbarState();
+      }, 3500);
+    }
+
+    function replaceOptions(listId, values) {
+      const list = document.getElementById(listId);
+      list.innerHTML = '';
+      values.forEach((value) => {
+        const option = document.createElement('option');
+        option.value = value;
+        list.appendChild(option);
+      });
+    }
+
+    function formatFallback(value) {
+      return value ? value : '-';
+    }
+
+    function formatBytes(value) {
+      if (!Number.isFinite(value) || value < 0) return '-';
+      const units = ['B', 'KiB', 'MiB', 'GiB', 'TiB', 'PiB'];
+      let size = value;
+      let unitIndex = 0;
+      while (size >= 1024 && unitIndex < units.length - 1) {
+        size /= 1024;
+        unitIndex += 1;
+      }
+      return unitIndex === 0 ? `${Math.round(size)} ${units[unitIndex]}` : `${size.toFixed(2)} ${units[unitIndex]}`;
+    }
+
+    function formatDuration(value) {
+      const seconds = Math.max(Number(value || 0), 0);
+      if (seconds < 60) return `${Math.max(Math.round(seconds), 1)}s`;
+      const minutes = Math.floor(seconds / 60);
+      if (minutes < 60) return `${minutes}m`;
+      const hours = Math.floor(minutes / 60);
+      if (hours < 24) return `${hours}h ${minutes % 60}m`;
+      const days = Math.floor(hours / 24);
+      return `${days}d ${hours % 24}h`;
+    }
+
+    async function readErrorDetail(response) {
+      const contentType = response.headers.get('content-type') || '';
+      if (contentType.includes('application/json')) {
+        try {
+          const payload = await response.json();
+          if (payload && typeof payload.detail === 'string') return payload.detail;
+          return JSON.stringify(payload);
+        } catch (error) {}
+      }
+
+      const text = await response.text();
+      return text || `HTTP ${response.status}`;
+    }
+
+    function renderScannerStatus(status) {
+      currentScannerStatus = status;
+      const defaultSlots = Math.max(Number(status.default_slots || 1), 1);
+      const requestedSlots = Math.max(Number(status.requested_slots || defaultSlots), 1);
+      const hardMaxSlots = Math.max(Number(status.hard_max_slots || defaultSlots), 1);
+      scannerSlotsSelect.innerHTML = '';
+      for (let slots = 1; slots <= hardMaxSlots; slots += 1) {
+        const option = document.createElement('option');
+        option.value = String(slots);
+        if (slots === defaultSlots) {
+          option.textContent = `${slots} (default)`;
+        } else if (slots > defaultSlots) {
+          option.textContent = `${slots} (temporary boost)`;
+        } else {
+          option.textContent = String(slots);
+        }
+        scannerSlotsSelect.appendChild(option);
+      }
+      scannerSlotsSelect.value = String(Math.min(requestedSlots, hardMaxSlots));
+
+      const mode = status.boost_until_queue_empty
+        ? `temporary ${requestedSlots}-slot boost`
+        : `${requestedSlots} slot${requestedSlots === 1 ? '' : 's'}`;
+      const boostHint = Number(status.queued || 0) > 0 && requestedSlots === defaultSlots && hardMaxSlots > defaultSlots
+        ? ' | temporary boost available'
+        : '';
+      const maintenanceText = status.maintenance_mode
+        ? (status.maintenance_drained ? ' | maintenance ready: drained' : ' | maintenance: draining current files')
+        : '';
+      scannerStatus.textContent = `${status.active || 0} active, ${status.queued || 0} queued, ${status.paused || 0} paused | ${status.active_large || 0}/${status.max_large_scans || 1} large | ${status.per_job_scan_workers || 1} range workers/job, ${status.clamd_max_inflight_requests || 1} ClamD max | ${mode}${boostHint}${maintenanceText}`;
+
+      const health = status.health || {};
+      const engine = health.engine_version ? `engine ${health.engine_version}` : 'engine unknown';
+      const definitions = health.database_version ? `definitions ${health.database_version}` : 'definitions unknown';
+      const hasDefinitionAge = health.definitions_age_hours !== null && health.definitions_age_hours !== undefined;
+      const age = hasDefinitionAge && Number.isFinite(Number(health.definitions_age_hours))
+        ? `${Number(health.definitions_age_hours).toFixed(1)}h old`
+        : 'age unknown';
+      scannerHealth.textContent = `${health.message || 'Scanner health unavailable.'} ${engine}; ${definitions}, ${age}.`;
+
+      scannerStatusCard.classList.remove('error', 'warning', 'maintenance');
+      if (status.maintenance_mode) scannerStatusCard.classList.add('maintenance');
+      if (health.status === 'warning') scannerStatusCard.classList.add('warning');
+      if (health.can_scan === false && !status.maintenance_mode) scannerStatusCard.classList.add('error');
+
+      scannerMaintenanceButton.textContent = status.maintenance_mode ? 'End Maintenance' : 'Start Maintenance';
+      scannerMaintenanceButton.classList.toggle('danger-soft', Boolean(status.maintenance_mode));
+    }
+
+    async function loadScannerStatus() {
+      try {
+        const response = await fetch('/scanner/status');
+        if (!response.ok) throw new Error(await readErrorDetail(response));
+        renderScannerStatus(await response.json());
+      } catch (error) {
+        scannerStatus.textContent = `Scanner status unavailable: ${error}`;
+        scannerHealth.textContent = 'No ClamAV health details are available.';
+        scannerStatusCard.classList.add('error');
+      }
+    }
+
+    async function updateScannerSlots() {
+      const slots = Number(scannerSlotsSelect.value);
+      scannerSlotsSelect.disabled = true;
+      try {
+        const status = await postJson('/scanner/slots', { slots });
+        renderScannerStatus(status);
+        flashJobsToolbarStatus(
+          slots > Number(status.default_slots || 1)
+            ? `Scanner boosted to ${slots} slots until the queue clears.`
+            : `Scanner set to ${slots} slot${slots === 1 ? '' : 's'}.`
+        );
+      } catch (error) {
+        flashJobsToolbarStatus(String(error), true);
+        await loadScannerStatus();
+      } finally {
+        scannerSlotsSelect.disabled = false;
+      }
+    }
+
+    async function updateScannerMaintenance() {
+      const enable = !Boolean(currentScannerStatus && currentScannerStatus.maintenance_mode);
+      if (enable && !confirm('Start scanner maintenance? No new files will start. Active scans will finish only their current file, checkpoint it, and then drain back to the queue.')) {
+        return;
+      }
+      scannerMaintenanceButton.disabled = true;
+      try {
+        const status = await postJson('/scanner/maintenance', {
+          enabled: enable,
+          reason: enable ? 'Operator requested maintenance from the UI' : null,
+        });
+        renderScannerStatus(status);
+        flashJobsToolbarStatus(
+          enable
+            ? 'Scanner maintenance started. Wait for the status to say drained before replacing/restarting ClamAV.'
+            : 'Scanner maintenance ended. Queued scans may start again.'
+        );
+      } catch (error) {
+        flashJobsToolbarStatus(String(error), true);
+        await loadScannerStatus();
+      } finally {
+        scannerMaintenanceButton.disabled = false;
+      }
+    }
+
+    function sanitizeMagnetUri(value) {
+      return String(value || '').trim().replace(/[),;\]>]+$/g, '');
+    }
+
+    function extractBtih(magnetUri) {
+      const match = String(magnetUri || '').match(btihPattern);
+      return match ? match[2].toLowerCase() : '';
+    }
+
+    function parseMagnetInput(rawValue) {
+      const magnets = [];
+      const invalidLines = [];
+      const invalidHashLines = [];
+      const duplicateLines = [];
+      const seenMagnets = new Set();
+      const lines = String(rawValue || '').split(/\r?\n/);
+
+      lines.forEach((line, lineIndex) => {
+        const trimmed = line.trim();
+        if (!trimmed) return;
+
+        const matches = [...trimmed.matchAll(magnetUriPattern)].map((match) => sanitizeMagnetUri(match[0]));
+        if (matches.length === 0) {
+          invalidLines.push(lineIndex + 1);
+          return;
+        }
+
+        matches.forEach((magnetUri) => {
+          if (!btihPattern.test(magnetUri)) {
+            invalidHashLines.push(lineIndex + 1);
+            return;
+          }
+          const infoHash = extractBtih(magnetUri);
+          const duplicateKey = infoHash || magnetUri.toLowerCase();
+          if (seenMagnets.has(duplicateKey)) {
+            duplicateLines.push(lineIndex + 1);
+            return;
+          }
+          seenMagnets.add(duplicateKey);
+          magnets.push({ uri: magnetUri, line: lineIndex + 1, infoHash });
+        });
+      });
+
+      return {
+        magnets,
+        invalidLines: [...new Set(invalidLines)],
+        invalidHashLines: [...new Set(invalidHashLines)],
+        duplicateLines: [...new Set(duplicateLines)],
+      };
+    }
+
+    function describeMagnet(magnet) {
+      if (magnet.file) return magnet.file.name;
+      const nameMatch = magnet.uri.match(/(?:^|[?&])dn=([^&]+)/i);
+      if (!nameMatch) return magnet.infoHash ? `BTIH ${magnet.infoHash}` : `Line ${magnet.line}`;
+      try {
+        return decodeURIComponent(nameMatch[1].replace(/\+/g, ' '));
+      } catch (error) {
+        return nameMatch[1];
+      }
+    }
+
+    function getFormSettings() {
+      if (customTagInput.value.trim()) {
+        throw new Error('Finish the tag search first: choose a suggestion, use Add Tag, press Enter, or clear the search field.');
+      }
+      const form = new FormData(jobForm);
+      const finalCategory = String(form.get('final_category') || '').trim();
+      return {
+        final_parent: String(form.get('final_parent') || '').trim(),
+        final_category: finalCategory || null,
+        staging_preference: String(form.get('staging_preference') || 'local'),
+        nas_staging_id: form.get('staging_preference') === 'nas' ? nasStagingSelect.value : null,
+        custom_tags: [...selectedCustomTags],
+      };
+    }
+
+    function setBulkDialogStatus(message, isError = false) {
+      bulkDialogStatus.textContent = message || '';
+      bulkDialogStatus.classList.toggle('error', Boolean(isError));
+    }
+
+    function closeBulkDialog() {
+      if (bulkSubmitting) return;
+      bulkDialog.hidden = true;
+      pendingBulkItems = [];
+      bulkList.innerHTML = '';
+      setBulkDialogStatus('');
+    }
+
+    function syncBulkSettingsMode() {
+      const useSameSettings = bulkUseSameSettings.checked;
+      bulkList.querySelectorAll('.bulk-final-parent, .bulk-final-category, .bulk-staging-preference').forEach((field) => {
+        field.disabled = bulkSubmitting || useSameSettings;
+      });
+      bulkList.querySelectorAll('.bulk-row').forEach(row => {
+        const nasSelect = row.querySelector('.bulk-nas-staging');
+        const isNas = row.querySelector('.bulk-staging-preference').value === 'nas';
+        nasSelect.disabled = bulkSubmitting || useSameSettings || !isNas;
+        nasSelect.closest('label').hidden = !isNas;
+      });
+    }
+
+    function createBulkRow(magnet, index, settings) {
+      const row = document.createElement('div');
+      row.className = 'bulk-row';
+      row.dataset.index = String(index);
+
+      const magnetCell = document.createElement('div');
+      magnetCell.className = 'bulk-row-magnet mono';
+      const title = document.createElement('strong');
+      title.textContent = `${index + 1}. ${describeMagnet(magnet)}`;
+      const detail = document.createElement('span');
+      detail.textContent = magnet.file
+        ? `.torrent metadata · ${formatBytes(magnet.file.size)}`
+        : `Magnet · Line ${magnet.line}${magnet.infoHash ? ` · ${magnet.infoHash}` : ''}`;
+      magnetCell.append(title, detail);
+      if (magnet.error) {
+        const error = document.createElement('span');
+        error.textContent = magnet.error;
+        error.className = 'error';
+        magnetCell.appendChild(error);
+      }
+      row.appendChild(magnetCell);
+
+      const pathLabel = document.createElement('label');
+      pathLabel.className = 'bulk-row-field';
+      pathLabel.innerHTML = '<span>Final Parent Path</span>';
+      const pathInput = document.createElement('input');
+      pathInput.className = 'bulk-final-parent mono';
+      pathInput.type = 'text';
+      pathInput.value = settings.final_parent;
+      pathInput.setAttribute('list', 'final-parent-suggestions');
+      pathLabel.appendChild(pathInput);
+      row.appendChild(pathLabel);
+
+      const categoryLabel = document.createElement('label');
+      categoryLabel.className = 'bulk-row-field';
+      categoryLabel.innerHTML = '<span>Category</span>';
+      const categoryInput = document.createElement('input');
+      categoryInput.className = 'bulk-final-category';
+      categoryInput.type = 'text';
+      categoryInput.value = settings.final_category || '';
+      categoryLabel.appendChild(categoryInput);
+      row.appendChild(categoryLabel);
+
+      const stagingLabel = document.createElement('label');
+      stagingLabel.className = 'bulk-row-field';
+      stagingLabel.innerHTML = '<span>Staging</span>';
+      const stagingSelect = document.createElement('select');
+      stagingSelect.className = 'bulk-staging-preference';
+      ['local', 'nas'].forEach((value) => {
+        const option = document.createElement('option');
+        option.value = value;
+        option.textContent = value === 'local' ? 'Local' : 'NAS';
+        option.selected = value === settings.staging_preference;
+        stagingSelect.appendChild(option);
+      });
+      stagingLabel.appendChild(stagingSelect);
+      row.appendChild(stagingLabel);
+
+      const nasLabel = document.createElement('label'); nasLabel.className = 'bulk-row-field bulk-nas-field';
+      const nasTitle = document.createElement('span'); nasTitle.textContent = 'NAS staging location';
+      const nasSelect = nasStagingSelect.cloneNode(true); nasSelect.removeAttribute('id'); nasSelect.removeAttribute('name');
+      nasSelect.className = 'bulk-nas-staging'; nasSelect.value = settings.nas_staging_id || nasStagingSelect.value;
+      nasLabel.append(nasTitle, nasSelect); row.append(nasLabel);
+      stagingSelect.addEventListener('change', syncBulkSettingsMode);
+
+      return row;
+    }
+
+    function openBulkDialog(items, settings) {
+      pendingBulkItems = items;
+      bulkDialogCopy.textContent = `${items.length} intake items (${items.filter(item => item.file).length} files, ${items.filter(item => !item.file).length} magnets). Each row becomes its own tracked job. Files are uploaded one at a time to bound memory and qBittorrent load.`;
+      bulkTagsSummary.textContent = settings.custom_tags.length
+        ? `Every row will receive these qBittorrent tags: ${settings.custom_tags.join(', ')}.`
+        : 'No optional qBittorrent tags are selected. Tags can be added from the main form before opening bulk review.';
+      bulkUseSameSettings.checked = !items.some(item => item.settings);
+      bulkList.innerHTML = '';
+      items.forEach((item, index) => {
+        bulkList.appendChild(createBulkRow(item, index, item.settings || settings));
+      });
+      syncBulkSettingsMode();
+      setBulkDialogStatus('Using the current form settings for every torrent. Uncheck the option above to edit rows individually.');
+      bulkDialog.hidden = false;
+      bulkDialogSubmit.focus();
+    }
+
+    function buildBulkPayload() {
+      const sharedSettings = getFormSettings();
+      const useSameSettings = bulkUseSameSettings.checked;
+      const jobs = pendingBulkItems.map((item, index) => {
+        const source = item.file ? {} : {magnet_uri: item.uri};
+        if (useSameSettings) {
+          return { ...source, ...sharedSettings };
+        }
+
+        const row = bulkList.querySelector(`.bulk-row[data-index="${index}"]`);
+        const finalParent = row.querySelector('.bulk-final-parent').value.trim();
+        const finalCategory = row.querySelector('.bulk-final-category').value.trim();
+        const stagingPreference = row.querySelector('.bulk-staging-preference').value;
+        return {
+          ...source,
+          final_parent: finalParent,
+          final_category: finalCategory || null,
+          staging_preference: stagingPreference,
+          nas_staging_id: stagingPreference === 'nas' ? row.querySelector('.bulk-nas-staging').value : null,
+          custom_tags: [...sharedSettings.custom_tags],
+        };
+      });
+      return { jobs };
+    }
+
+    function formatBatchErrors(errors) {
+      return Object.entries(errors || {})
+        .slice(0, 4)
+        .map(([index, message]) => `#${index}: ${message}`)
+        .join(' | ');
+    }
+
+    async function submitBulkDialog() {
+      if (bulkSubmitting) return;
+      bulkSubmitting = true;
+      bulkDialogSubmit.disabled = true;
+      bulkDialogCancel.disabled = true;
+      bulkDialogClose.disabled = true;
+      bulkUseSameSettings.disabled = true;
+      submitButton.disabled = true;
+      syncBulkSettingsMode();
+      setBulkDialogStatus('Adding torrents as individually tracked jobs...');
+      try {
+        const payload = buildBulkPayload();
+        let result;
+        if (pendingBulkItems.some(item => item.file)) {
+          result = {created: 0, failed: 0, errors: {}};
+          for (const [index, item] of pendingBulkItems.entries()) {
+            setBulkDialogStatus(`Adding item ${index + 1} of ${pendingBulkItems.length}: ${describeMagnet(item)}`);
+            try {
+              await submitIntakeItem(item, payload.jobs[index]);
+              result.created++;
+            } catch (error) {
+              result.failed++;
+              result.errors[String(index + 1)] = String(error);
+            }
+          }
+        } else {
+          result = await postJson('/jobs/bulk', payload);
+        }
+        const failedIndexes = Object.keys(result.errors || {}).map((index) => Number(index) - 1);
+        if (result.failed > 0) {
+          const failedItems = failedIndexes.map(index => ({
+            ...pendingBulkItems[index], settings: payload.jobs[index], error: result.errors[String(index + 1)],
+          }));
+          magnetInput.value = failedItems.map(item => item.uri).filter(Boolean).join('\n');
+          selectedTorrentFiles = failedItems.map(item => item.file).filter(Boolean);
+          updateTorrentFileSelection();
+          const detail = formatBatchErrors(result.errors);
+          const message = `Bulk submit: ${result.created || 0} created, ${result.failed || 0} failed. Only failed items remain; their row settings are preserved. Check Recent Jobs before retrying an uncertain submission.${detail ? ` ${detail}` : ''}`;
+          openBulkDialog(failedItems, getFormSettings());
+          setBulkDialogStatus(message, true);
+          setFormStatus(message, true);
+        } else {
+          magnetInput.value = '';
+          selectedTorrentFiles = [];
+          updateTorrentFileSelection();
+          setFormStatus(`Bulk submit complete: ${result.created || 0} torrents added as individually tracked jobs.`);
+          bulkSubmitting = false;
+          closeBulkDialog();
+        }
+        if ((result.created || 0) > 0) {
+          knownCustomTags = sortedUnique([...knownCustomTags, ...selectedCustomTags]);
+        }
+        await loadJobs();
+      } catch (error) {
+        setBulkDialogStatus(String(error), true);
+      } finally {
+        bulkSubmitting = false;
+        bulkDialogSubmit.disabled = false;
+        bulkDialogCancel.disabled = false;
+        bulkDialogClose.disabled = false;
+        bulkUseSameSettings.disabled = false;
+        submitButton.disabled = false;
+        syncBulkSettingsMode();
+      }
+    }
+
+    function updateTorrentFileSelection() {
+      torrentFileInput.value = '';
+      torrentFileSummary.textContent = selectedTorrentFiles.length
+        ? `${selectedTorrentFiles.length} selected: ${selectedTorrentFiles.map(file => file.name).join(', ')}`
+        : 'No .torrent files selected.';
+      torrentFilesClear.hidden = selectedTorrentFiles.length === 0;
+    }
+
+    torrentFileInput.addEventListener('change', () => {
+      const files = [...torrentFileInput.files];
+      const invalid = files.find(file => !file.name.toLowerCase().endsWith('.torrent') || !file.size || file.size > 32 * 1024 * 1024);
+      if (invalid) {
+        setFormStatus(`Choose nonempty .torrent metadata files up to 32 MiB each. Rejected selection: ${invalid.name}`, true);
+      } else if (selectedTorrentFiles.length + files.length > 50) {
+        setFormStatus('A bulk submission can contain at most 50 files and magnets combined.', true);
+      } else {
+        selectedTorrentFiles.push(...files);
+        setFormStatus('Files selected. Confirm the destination, then submit to review multiple items.');
+      }
+      updateTorrentFileSelection();
+    });
+    torrentFilesClear.addEventListener('click', () => {
+      selectedTorrentFiles = [];
+      updateTorrentFileSelection();
+    });
+
+    async function submitIntakeItem(item, options) {
+      if (!item.file) return postJson('/jobs', {...options, magnet_uri: item.uri});
+      const form = new FormData();
+      form.append('settings', JSON.stringify(options));
+      form.append('file', item.file);
+      const response = await fetch('/jobs/torrent', {method: 'POST', body: form});
+      if (!response.ok) throw new Error(await readErrorDetail(response));
+      return response.json();
+    }
+
+    window.addEventListener('beforeunload', event => {
+      if (bulkSubmitting || singleSubmitting) { event.preventDefault(); event.returnValue = ''; }
+    });
+
+    function syncHeroDetailsForViewport() {
+      heroDetails.open = !mobileHeroMediaQuery.matches;
+    }
+
+    function sortedUnique(values) {
+      return Array.from(new Set(values.filter(Boolean))).sort((left, right) => left.localeCompare(right));
+    }
+
+    function validateCustomTag(rawValue) {
+      const tag = String(rawValue || '').trim();
+      if (!tag) return { tag: '', error: 'Enter a tag name first.' };
+      if (tag.includes(',')) return { tag, error: 'qBittorrent tag names cannot contain commas.' };
+      if (Array.from(tag).length > maxCustomTagLength) {
+        return { tag, error: `Tag names must be ${maxCustomTagLength} characters or fewer.` };
+      }
+      if (/[\u0000-\u001f\u007f-\u009f\ud800-\udfff]/u.test(tag)) {
+        return { tag, error: 'Tag names cannot contain control or surrogate characters.' };
+      }
+      const folded = tag.toLocaleLowerCase();
+      if (folded.startsWith(String(privateJobTagPrefix || '').toLocaleLowerCase()) || folded === String(managedQbtTag || '').trim().toLocaleLowerCase()) {
+        return { tag, error: 'That tag name is reserved for Torrent Intake tracking.' };
+      }
+      return { tag, error: '' };
+    }
+
+    function setCustomTagStatus(message, isError = false) {
+      customTagStatus.textContent = message || '';
+      customTagStatus.classList.toggle('error', Boolean(isError));
+    }
+
+    function closeCustomTagMenu() {
+      customTagPicker.dataset.open = 'false';
+      customTagInput.setAttribute('aria-expanded', 'false');
+      customTagInput.removeAttribute('aria-activedescendant');
+      customTagMenu.hidden = true;
+      customTagMenu.innerHTML = '';
+      tagMenuOptions = [];
+      activeTagOptionIndex = -1;
+    }
+
+    function renderSelectedCustomTags() {
+      selectedCustomTagsContainer.innerHTML = '';
+      selectedCustomTags.forEach((tag) => {
+        const chip = document.createElement('span');
+        chip.className = 'tag-chip';
+        chip.setAttribute('role', 'listitem');
+
+        const name = document.createElement('span');
+        name.className = 'tag-chip-name';
+        name.textContent = tag;
+        name.title = tag;
+
+        const remove = document.createElement('button');
+        remove.className = 'tag-chip-remove';
+        remove.type = 'button';
+        remove.textContent = '×';
+        remove.setAttribute('aria-label', `Remove qBittorrent tag ${tag}`);
+        remove.addEventListener('click', () => {
+          selectedCustomTags = selectedCustomTags.filter((value) => value !== tag);
+          renderSelectedCustomTags();
+          customTagInput.focus();
+          renderCustomTagMenu();
+          setCustomTagStatus(`Removed “${tag}”. ${selectedCustomTags.length} of ${maxCustomTags} tags selected.`);
+        });
+
+        chip.append(name, remove);
+        selectedCustomTagsContainer.appendChild(chip);
+      });
+    }
+
+    function addSelectedCustomTag(rawValue, { announce = true } = {}) {
+      const { tag, error } = validateCustomTag(rawValue);
+      if (error) {
+        setCustomTagStatus(error, true);
+        return error;
+      }
+      if (selectedCustomTags.includes(tag)) {
+        customTagInput.value = '';
+        renderCustomTagMenu({ showAll: true });
+        if (announce) setCustomTagStatus(`“${tag}” is already selected.`);
+        return '';
+      }
+      if (selectedCustomTags.length >= maxCustomTags) {
+        const limitError = `A job can have at most ${maxCustomTags} custom qBittorrent tags.`;
+        setCustomTagStatus(limitError, true);
+        return limitError;
+      }
+
+      selectedCustomTags.push(tag);
+      customTagInput.value = '';
+      renderSelectedCustomTags();
+      renderCustomTagMenu({ showAll: true });
+      if (announce) {
+        setCustomTagStatus(`Added “${tag}”. ${selectedCustomTags.length} of ${maxCustomTags} tags selected.`);
+      }
+      return '';
+    }
+
+    function availableTagMatches(rawQuery) {
+      const query = String(rawQuery || '').trim().toLocaleLowerCase();
+      const available = knownCustomTags.filter((tag) => !selectedCustomTags.includes(tag));
+      if (!query) return available;
+
+      const startsWith = [];
+      const includes = [];
+      available.forEach((tag) => {
+        const lowered = tag.toLocaleLowerCase();
+        if (lowered.startsWith(query)) {
+          startsWith.push(tag);
+        } else if (lowered.includes(query)) {
+          includes.push(tag);
+        }
+      });
+      return [...startsWith, ...includes];
+    }
+
+    function setActiveTagOption(index) {
+      if (tagMenuOptions.length === 0) {
+        activeTagOptionIndex = -1;
+        customTagInput.removeAttribute('aria-activedescendant');
+        return;
+      }
+      activeTagOptionIndex = (index + tagMenuOptions.length) % tagMenuOptions.length;
+      customTagMenu.querySelectorAll('.combo-option').forEach((option, optionIndex) => {
+        option.dataset.active = String(optionIndex === activeTagOptionIndex);
+      });
+      const active = document.getElementById(`custom-tag-option-${activeTagOptionIndex}`);
+      if (active) {
+        customTagInput.setAttribute('aria-activedescendant', active.id);
+        active.scrollIntoView({ block: 'nearest' });
+      }
+    }
+
+    function renderCustomTagMenu({ showAll = false } = {}) {
+      const rawQuery = showAll ? '' : customTagInput.value;
+      const query = String(rawQuery || '').trim();
+
+      if (selectedCustomTags.length >= maxCustomTags) {
+        tagMenuOptions = [];
+        customTagPicker.dataset.open = 'true';
+        customTagInput.setAttribute('aria-expanded', 'true');
+        customTagInput.removeAttribute('aria-activedescendant');
+        customTagMenu.hidden = false;
+        customTagMenu.innerHTML = '';
+        const limit = document.createElement('div');
+        limit.className = 'combo-empty';
+        limit.textContent = `The ${maxCustomTags}-tag limit is reached. Remove a selected tag before adding another.`;
+        customTagMenu.appendChild(limit);
+        activeTagOptionIndex = -1;
+        setCustomTagStatus(`${selectedCustomTags.length} of ${maxCustomTags} tags selected.`);
+        return;
+      }
+
+      const matches = availableTagMatches(rawQuery);
+      const options = [];
+      const validation = query ? validateCustomTag(query) : { tag: '', error: '' };
+      const exactKnown = query && knownCustomTags.includes(validation.tag);
+      const exactSelected = query && selectedCustomTags.includes(validation.tag);
+      const canUseNewTag = query && !validation.error && !exactKnown && !exactSelected;
+
+      // Existing matches come first so Enter selects the likely intended tag.
+      // The typed value remains available at the end or through Add Tag.
+      const existingLimit = Math.max(maxTagSuggestions - (canUseNewTag ? 1 : 0), 0);
+      matches.slice(0, existingLimit).forEach((tag) => options.push({ value: tag, create: false }));
+      if (canUseNewTag) options.push({ value: validation.tag, create: true });
+      tagMenuOptions = options;
+
+      customTagPicker.dataset.open = 'true';
+      customTagInput.setAttribute('aria-expanded', 'true');
+      customTagMenu.hidden = false;
+      customTagMenu.innerHTML = '';
+
+      if (options.length === 0) {
+        const empty = document.createElement('div');
+        empty.className = 'combo-empty';
+        if (validation.error && query) {
+          empty.textContent = validation.error;
+          setCustomTagStatus(validation.error, true);
+        } else if (exactSelected) {
+          empty.textContent = 'That tag is already selected.';
+          setCustomTagStatus('That tag is already selected.');
+        } else if (knownCustomTags.length === 0) {
+          empty.textContent = 'No reusable qBittorrent tags were returned. Type a new tag and use Add Tag or press Enter.';
+          setCustomTagStatus(`${selectedCustomTags.length} of ${maxCustomTags} tags selected; no reusable tags are currently available.`);
+        } else {
+          empty.textContent = 'No selectable tags match this search.';
+          setCustomTagStatus('No selectable tags match this search.');
+        }
+        customTagMenu.appendChild(empty);
+        setActiveTagOption(-1);
+        return;
+      }
+
+      options.forEach((option, index) => {
+        const button = document.createElement('button');
+        button.id = `custom-tag-option-${index}`;
+        button.type = 'button';
+        button.tabIndex = -1;
+        button.className = 'combo-option';
+        button.setAttribute('role', 'option');
+        button.setAttribute('aria-selected', 'false');
+        button.dataset.active = 'false';
+        button.textContent = option.create ? `Use new tag “${option.value}”` : option.value;
+        button.addEventListener('mousedown', (event) => event.preventDefault());
+        button.addEventListener('click', () => {
+          addSelectedCustomTag(option.value);
+          customTagInput.focus();
+        });
+        customTagMenu.appendChild(button);
+      });
+      setActiveTagOption(0);
+
+      const existingShown = Math.min(matches.length, existingLimit);
+      if (matches.length > existingLimit) {
+        setCustomTagStatus(`Showing ${existingShown} of ${matches.length} existing tags. Type to narrow the list.`);
+      } else if (query) {
+        setCustomTagStatus(`${matches.length} existing match${matches.length === 1 ? '' : 'es'}${canUseNewTag ? '; use Add Tag to select the typed name instead' : ''}.`);
+      } else {
+        setCustomTagStatus(`${matches.length} reusable tag${matches.length === 1 ? '' : 's'} available; ${selectedCustomTags.length} selected.`);
+      }
+    }
+
+    function filterCategories(rawQuery) {
+      const query = (rawQuery || '').trim().toLowerCase();
+      if (!query) return knownCategories.slice(0, 24);
+
+      const startsWith = [];
+      const includes = [];
+      knownCategories.forEach((category) => {
+        const lowered = category.toLowerCase();
+        if (lowered.startsWith(query)) {
+          startsWith.push(category);
+        } else if (lowered.includes(query)) {
+          includes.push(category);
+        }
+      });
+      return [...startsWith, ...includes].slice(0, 24);
+    }
+
+    function closeCategoryMenu() {
+      finalCategoryCombo.dataset.open = 'false';
+      finalCategoryInput.setAttribute('aria-expanded', 'false');
+      categoryMenu.hidden = true;
+      categoryMenu.innerHTML = '';
+    }
+
+    function chooseCategory(value) {
+      finalCategoryInput.value = value;
+      closeCategoryMenu();
+    }
+
+    function openCategoryMenu({ showAll = false } = {}) {
+      const matches = filterCategories(showAll ? '' : finalCategoryInput.value);
+      finalCategoryCombo.dataset.open = 'true';
+      finalCategoryInput.setAttribute('aria-expanded', 'true');
+      categoryMenu.hidden = false;
+      categoryMenu.innerHTML = '';
+
+      if (matches.length === 0) {
+        const empty = document.createElement('div');
+        empty.className = 'combo-empty';
+        empty.textContent = knownCategories.length === 0
+          ? 'No existing qB categories were returned. Keep typing to create one.'
+          : 'No matching existing categories. Keep typing to create a new one.';
+        categoryMenu.appendChild(empty);
+        return;
+      }
+
+      matches.forEach((category) => {
+        const button = document.createElement('button');
+        button.type = 'button';
+        button.className = 'combo-option';
+        button.setAttribute('role', 'option');
+        button.setAttribute('aria-selected', String(category === finalCategoryInput.value));
+        button.textContent = category;
+        button.addEventListener('click', () => {
+          chooseCategory(category);
+        });
+        categoryMenu.appendChild(button);
+      });
+    }
+
+    function createCell(text, className = '') {
+      const td = document.createElement('td');
+      if (className) td.className = className;
+      td.textContent = formatFallback(text);
+      return td;
+    }
+
+    function createCheckboxCell(jobId, checked) {
+      const td = document.createElement('td');
+      td.className = 'cell-select';
+
+      const checkbox = document.createElement('input');
+      checkbox.type = 'checkbox';
+      checkbox.className = 'job-checkbox';
+      checkbox.dataset.jobId = jobId;
+      checkbox.checked = checked;
+      td.appendChild(checkbox);
+      return td;
+    }
+
+    function createStateCell(state) {
+      const td = document.createElement('td');
+      td.className = 'cell-state';
+      const pill = document.createElement('span');
+      pill.className = 'state-pill';
+      pill.dataset.state = state || '';
+      pill.textContent = state === 'waiting_for_nas' ? 'Waiting for NAS mount' : formatFallback(state);
+      td.appendChild(pill);
+      return td;
+    }
+
+    function createStageCell(job) {
+      const cell = createCell(job.staging_actual || job.staging_preference, 'cell-stage');
+      if (job.nas_staging_id || job.nas_staging_label || job.nas_staging_path) {
+        const detail = document.createElement('small');
+        const prefix = (job.staging_actual || job.staging_preference) === 'nas' ? 'NAS: ' : 'NAS fallback: ';
+        detail.textContent = `${prefix}${job.nas_staging_label || job.nas_staging_id || 'Saved NAS'}${job.nas_staging_path ? ` · ${job.nas_staging_path}` : ''}`;
+        cell.append(detail);
+      }
+      return cell;
+    }
+
+    function createHookResult(job) {
+      if (!job.hook_status) return null;
+      const isCopy = job.hook_kind === 'copy', actionName = isCopy ? 'Copy' : 'Script';
+      const details = document.createElement('details'); details.className = 'job-hook-result';
+      details.dataset.jobId = job.id;
+      const summary = document.createElement('summary'); summary.textContent = `${actionName} status: ${job.hook_status}`;
+      details.append(summary);
+      if (isCopy && job.hook_destination) {
+        const target = job.hook_copy_relative_path
+          ? `${job.hook_destination.replace(/\/+$/, '')}/${job.hook_copy_relative_path}` : job.hook_destination;
+        const destination = document.createElement('p'); destination.textContent = `Copy destination: ${target}`;
+        details.append(destination);
+        if (job.hook_copy_source_root) {
+          const rule = document.createElement('p'); rule.textContent = `Saved copy rule: ${job.hook_copy_source_root} → ${job.hook_destination}`;
+          details.append(rule);
+        }
+      }
+      const result = document.createElement('p');
+      result.textContent = [job.hook_error, job.hook_exit_code !== null && job.hook_exit_code !== undefined ? `Exit code: ${job.hook_exit_code}` : ''].filter(Boolean).join(' · ') || `${actionName} status is separate from the clean scan and final promotion result.`;
+      details.append(result);
+      if (job.hook_output) {
+        const outputLabel = document.createElement('p'); outputLabel.textContent = `${actionName} output:`;
+        const output = document.createElement('pre'); output.textContent = job.hook_output; details.append(outputLabel, output);
+      }
+      if (['failed', 'interrupted'].includes(job.hook_status)) {
+        const retry = document.createElement('button'); retry.type = 'button'; retry.className = 'button-secondary';
+        retry.dataset.retryHook = job.id; retry.textContent = `Retry ${actionName.toLowerCase()}`;
+        retry.hidden = !window.TISettings.isAdmin(); retry.disabled = !window.TISettings.canRetryHook();
+        retry.addEventListener('click', async () => {
+          const warning = isCopy
+            ? 'Retry the copy after promotion? Inspect any partial copy first. Existing data will not be overwritten or deleted. This does not rerun scanning or promotion.'
+            : 'Run the post-promotion script again? A previous attempt may have partially completed. This does not rerun scanning or promotion.';
+          if (!confirm(warning)) return;
+          retry.disabled = true;
+          try {
+            const response = await window.TISettings.retryHook(job.id); await loadJobs();
+            flashJobsToolbarStatus(response.message || `${actionName} queued. Verify and resume Intake in Settings to run it.`);
+          }
+          catch (error) { result.textContent = String(error); retry.disabled = !window.TISettings.canRetryHook(); }
+        });
+        details.append(retry);
+        const hint = document.createElement('p'); hint.textContent = 'To retry, unlock administration and pause Intake in Settings, then wait for drained. '
+          + (isCopy ? 'Inspect any partial copy first; it will not be overwritten automatically.' : 'A retry may repeat effects of an earlier attempt.'); details.append(hint);
+      }
+      if (isCopy && ['pending', 'failed', 'interrupted'].includes(job.hook_status)) {
+        const cancel = document.createElement('button'); cancel.type = 'button'; cancel.className = 'button-secondary';
+        cancel.dataset.cancelCopy = job.id; cancel.textContent = 'Cancel copy';
+        cancel.hidden = !window.TISettings.isAdmin(); cancel.disabled = !window.TISettings.canRetryHook();
+        cancel.addEventListener('click', async () => {
+          if (!confirm('Cancel this old copy request permanently? No files will be removed, including any partial copy. The torrent, scan result and completed promotion remain unchanged. This request cannot be retried after cancellation.')) return;
+          cancel.disabled = true;
+          try {
+            const response = await window.TISettings.cancelCopy(job.id); await loadJobs();
+            flashJobsToolbarStatus(response.message || 'Copy cancelled. No files were removed.');
+          }
+          catch (error) { result.textContent = String(error); cancel.disabled = !window.TISettings.canRetryHook(); }
+        });
+        details.append(cancel);
+        const hint = document.createElement('p');
+        hint.textContent = 'To abandon an old copy request, unlock administration and pause Intake in Settings, then wait for drained. Cancel copy leaves all files untouched; resume Intake before clearing its history.';
+        details.append(hint);
+      }
+      return details;
+    }
+
+    function createActivityCell(job) {
+      const td = document.createElement('td');
+      td.className = 'cell-last-error';
+      const value = job.last_error || job.activity_summary || '-';
+      const copy = document.createElement('div');
+      copy.className = 'scan-activity-copy';
+      copy.textContent = value;
+      if (job.last_error) {
+        td.classList.add('activity-error');
+      } else if (job.activity_summary) {
+        td.classList.add('activity-detail');
+      }
+      td.appendChild(copy);
+      const hookResult = createHookResult(job); if (hookResult) td.append(hookResult);
+
+      const hasProgress = job.scan_progress_percent !== null && job.scan_progress_percent !== undefined;
+      const progress = Number(job.scan_progress_percent);
+      const scanStates = ['scan_pending', 'scanning', 'scan_paused', 'scan_clean', 'promoting', 'scan_infected', 'quarantining_infected', 'deleting_infected'];
+      if (scanStates.includes(job.state) && hasProgress && Number.isFinite(progress)) {
+        td.classList.add('scan-activity');
+        const meta = document.createElement('div');
+        meta.className = 'scan-progress-meta';
+
+        const completedLabel = document.createElement('span');
+        const basis = Number(job.scan_total_bytes || 0) > 0 ? 'bytes checkpointed' : 'files checkpointed';
+        completedLabel.textContent = `${Math.min(Math.max(progress, 0), 100).toFixed(1)}% ${basis}`;
+        meta.appendChild(completedLabel);
+
+        const etaLabel = document.createElement('span');
+        const hasEta = job.scan_eta_seconds !== null && job.scan_eta_seconds !== undefined;
+        if (hasEta && Number.isFinite(Number(job.scan_eta_seconds))) {
+          etaLabel.textContent = `ETA ${formatDuration(job.scan_eta_seconds)} · ${job.scan_eta_confidence || 'low'} confidence`;
+        } else if (job.state === 'scanning') {
+          etaLabel.textContent = job.scan_eta_confidence === 'low' ? 'ETA suspended: current file is atypical' : 'Learning ETA';
+        } else {
+          etaLabel.textContent = `${job.scan_completed_files || 0}/${job.scan_total_files || 0} files`;
+        }
+        meta.appendChild(etaLabel);
+        td.appendChild(meta);
+
+        const track = document.createElement('div');
+        track.className = `scan-progress-track${job.state === 'scanning' ? ' is-active' : ''}`;
+        track.setAttribute('role', 'progressbar');
+        track.setAttribute('aria-label', 'Completed scan checkpoints');
+        track.setAttribute('aria-valuemin', '0');
+        track.setAttribute('aria-valuemax', '100');
+        track.setAttribute('aria-valuenow', String(Math.min(Math.max(progress, 0), 100)));
+        const fill = document.createElement('div');
+        fill.className = 'scan-progress-fill';
+        fill.style.width = `${Math.min(Math.max(progress, 0), 100)}%`;
+        track.appendChild(fill);
+        td.appendChild(track);
+
+        if (job.state === 'scanning' && job.scan_current_file) {
+          const note = document.createElement('div');
+          note.className = 'scan-current-note';
+          note.textContent = 'Current file progress is indeterminate; the exact percentage advances only after that file is safely checkpointed.';
+          td.appendChild(note);
+        }
+      }
+      return td;
+    }
+
+    function createFinalParentCell(job) {
+      const td = document.createElement('td');
+      td.className = 'mono cell-final-parent';
+      const path = document.createElement('div');
+      path.textContent = job.final_parent || '-';
+      td.appendChild(path);
+      if (job.can_edit_final_destination) {
+        const button = document.createElement('button');
+        button.type = 'button';
+        button.className = 'button-secondary edit-final-destination';
+        button.textContent = 'Edit final location';
+        button.dataset.editFinalDestination = job.id;
+        button.dataset.finalParent = job.final_parent;
+        button.dataset.torrentName = job.torrent_name || job.torrent_file_name || job.id;
+        button.setAttribute('aria-haspopup', 'dialog');
+        button.setAttribute('aria-controls', 'final-destination-dialog');
+        td.appendChild(button);
+      }
+      return td;
+    }
+
+    function openFinalDestination(button) {
+      // Capture the original value, not a live reference: the server rejects stale edits.
+      editingFinalDestination = {id: button.dataset.editFinalDestination, expected: button.dataset.finalParent};
+      document.getElementById('final-destination-job').textContent = button.dataset.torrentName;
+      editFinalParentInput.value = editingFinalDestination.expected;
+      finalDestinationStatus.textContent = '';
+      finalDestinationStatus.classList.remove('error');
+      finalDestinationDialog.showModal();
+      editFinalParentInput.focus();
+      loadFinalPathSuggestions(editFinalParentInput, 'edit-final-parent-suggestions');
+    }
+
+    async function saveFinalDestination(event) {
+      event.preventDefault();
+      if (!editingFinalDestination || finalDestinationSaving) return;
+      finalDestinationSaving = true;
+      editFinalParentInput.disabled = finalDestinationSave.disabled = finalDestinationCancel.disabled = true;
+      finalDestinationStatus.textContent = 'Saving final location…';
+      finalDestinationStatus.classList.remove('error');
+      try {
+        const response = await fetch(`/jobs/${encodeURIComponent(editingFinalDestination.id)}/final-destination`, {
+          method: 'PATCH',
+          headers: {'Content-Type': 'application/json'},
+          body: JSON.stringify({final_parent: editFinalParentInput.value.trim(), expected_final_parent: editingFinalDestination.expected}),
+        });
+        if (!response.ok) throw new Error(await readErrorDetail(response));
+        const updatedJob = await response.json();
+        latestJobs = latestJobs.map(job => job.id === updatedJob.id ? updatedJob : job);
+        renderJobs(latestJobs);
+        finalDestinationDialog.close();
+        flashJobsToolbarStatus(updatedJob.state === 'scan_paused'
+          ? 'Final location saved. Scan remains paused with checkpoints preserved; choose Resume Scan when ready. Download staging and category are unchanged.'
+          : 'Final location saved. Download staging and category are unchanged; files move only after a successful scan.');
+      } catch (error) {
+        finalDestinationStatus.textContent = String(error);
+        finalDestinationStatus.classList.add('error');
+      } finally {
+        finalDestinationSaving = false;
+        editFinalParentInput.disabled = finalDestinationSave.disabled = finalDestinationCancel.disabled = false;
+      }
+    }
+
+    function compareJobsByCreatedAt(left, right) {
+      const leftMs = new Date(left.created_at || 0).getTime();
+      const rightMs = new Date(right.created_at || 0).getTime();
+      return jobsSortOrder === 'oldest' ? leftMs - rightMs : rightMs - leftMs;
+    }
+
+    function getDisplayedJobs() {
+      return latestJobs.filter((job) => {
+        const scanStates = ['scan_pending', 'scanning', 'scan_paused', 'scan_clean', 'promoting', 'scan_infected', 'quarantining_infected', 'deleting_infected'];
+        if (jobsFilter === 'scan_queue') return scanStates.includes(job.state);
+        if (jobsFilter === 'scan_paused') return job.state === 'scan_paused';
+        if (jobsFilter === 'failed') return job.state === 'error';
+        if (jobsFilter === 'completed') return ['done', 'infected_held', 'infected_quarantined', 'infected_deleted'].includes(job.state);
+        if (jobsFilter === 'downloading') {
+          return !scanStates.includes(job.state) && !['done', 'infected_held', 'infected_quarantined', 'infected_deleted', 'error'].includes(job.state);
+        }
+        return true;
+      }).sort(compareJobsByCreatedAt);
+    }
+
+    function pruneSelection() {
+      const visibleIds = new Set(latestJobs.map((job) => job.id));
+      selectedJobIds = new Set([...selectedJobIds].filter((jobId) => visibleIds.has(jobId)));
+    }
+
+    function countSelectedEligibleJobs(jobs) {
+      const retryEligible = jobs.filter((job) => selectedJobIds.has(job.id) && job.state === 'error').length;
+      const retryIneligibleSelected = jobs.filter((job) => selectedJobIds.has(job.id) && job.state !== 'error').length;
+      const moveNasEligible = jobs.filter(
+        (job) => selectedJobIds.has(job.id) && ['waiting_for_local_space', 'waiting_for_nas'].includes(job.state) && job.staging_actual === 'local'
+      ).length;
+      const deleteEligible = jobs.filter((job) => selectedJobIds.has(job.id)).length;
+      const scanNextEligible = jobs.filter(
+        (job) => selectedJobIds.has(job.id) && ['scan_pending', 'scanning'].includes(job.state)
+      ).length;
+      const pauseScanEligible = jobs.filter(
+        (job) => selectedJobIds.has(job.id) && ['scan_pending', 'scanning'].includes(job.state)
+      ).length;
+      const resumeScanEligible = jobs.filter(
+        (job) => selectedJobIds.has(job.id) && job.state === 'scan_paused'
+      ).length;
+      const failedJobs = latestJobs.filter((job) => job.state === 'error').length;
+      const completedJobs = latestJobs.filter((job) => ['done', 'infected_held', 'infected_quarantined', 'infected_deleted'].includes(job.state)).length;
+      return {
+        retryEligible,
+        retryIneligibleSelected,
+        moveNasEligible,
+        deleteEligible,
+        scanNextEligible,
+        pauseScanEligible,
+        resumeScanEligible,
+        failedJobs,
+        completedJobs,
+      };
+    }
+
+    function updateJobsToolbarState() {
+      const displayedJobs = getDisplayedJobs();
+      const displayedIds = displayedJobs.map((job) => job.id);
+      const selectedVisibleCount = displayedIds.filter((jobId) => selectedJobIds.has(jobId)).length;
+      const allVisibleSelected = displayedIds.length > 0 && selectedVisibleCount === displayedIds.length;
+
+      selectAllJobsCheckbox.checked = allVisibleSelected;
+      selectAllJobsCheckbox.indeterminate = selectedVisibleCount > 0 && !allVisibleSelected;
+
+      const {
+        retryEligible,
+        retryIneligibleSelected,
+        moveNasEligible,
+        deleteEligible,
+        scanNextEligible,
+        pauseScanEligible,
+        resumeScanEligible,
+        failedJobs,
+        completedJobs,
+      } = countSelectedEligibleJobs(displayedJobs);
+      retrySelectedButton.disabled = retryEligible === 0;
+      moveSelectedToNasButton.disabled = moveNasEligible === 0;
+      deleteSelectedButton.disabled = deleteEligible === 0;
+      scanNextButton.disabled = scanNextEligible === 0;
+      pauseScanButton.disabled = pauseScanEligible === 0;
+      resumeScanButton.disabled = resumeScanEligible === 0;
+      retryFailedButton.disabled = failedJobs === 0;
+      clearCompletedButton.disabled = completedJobs === 0;
+      clearFailedButton.disabled = failedJobs === 0;
+
+      if (selectedVisibleCount === 0) {
+        if (!jobsToolbarFlashTimer) {
+          setJobsToolbarStatus(`${displayedJobs.length} jobs shown. Select scan rows to prioritize, pause safely, or resume; every row can be forgotten without touching qBittorrent.`);
+        }
+        return;
+      }
+
+      if (!jobsToolbarFlashTimer) {
+        const skippedRetryText = retryIneligibleSelected
+          ? ` Retry only applies to intake error rows; ${retryIneligibleSelected} selected active/non-error row${retryIneligibleSelected === 1 ? '' : 's'} will be skipped.`
+          : '';
+        setJobsToolbarStatus(
+          `${selectedVisibleCount} selected. Prioritize: ${scanNextEligible}. Pause: ${pauseScanEligible}. Resume: ${resumeScanEligible}. Retry: ${retryEligible}. NAS staging eligible: ${moveNasEligible}. Forget: ${deleteEligible}.${skippedRetryText}`
+        );
+      }
+    }
+
+    function renderJobs(jobs) {
+      const openHookResults = new Set([...jobsTbody.querySelectorAll('.job-hook-result[open]')].map(node => node.dataset.jobId));
+      jobsTbody.innerHTML = '';
+      const sortedJobs = getDisplayedJobs();
+
+      if (!Array.isArray(sortedJobs) || sortedJobs.length === 0) {
+        const row = document.createElement('tr');
+        row.className = 'empty-row';
+        const cell = document.createElement('td');
+        cell.colSpan = 8;
+        cell.textContent = latestJobs.length ? 'No jobs match this view.' : 'No jobs yet.';
+        row.appendChild(cell);
+        jobsTbody.appendChild(row);
+        updateJobsToolbarState();
+        return;
+      }
+
+      sortedJobs.forEach((job) => {
+        const row = document.createElement('tr');
+        const isSelected = selectedJobIds.has(job.id);
+        if (isSelected) row.className = 'row-selected';
+        row.appendChild(createCheckboxCell(job.id, isSelected));
+        row.appendChild(createCell(job.id, 'mono cell-id'));
+        row.appendChild(createCell(job.torrent_name || job.torrent_file_name, 'cell-name'));
+        row.appendChild(createStateCell(job.state));
+        row.appendChild(createFinalParentCell(job));
+        row.appendChild(createStageCell(job));
+        row.appendChild(createCell(job.qbt_hash, 'mono cell-hash'));
+        row.appendChild(createActivityCell(job));
+        const hookResult = row.querySelector('.job-hook-result'); if (hookResult) hookResult.open = openHookResults.has(job.id);
+        jobsTbody.appendChild(row);
+      });
+
+      updateJobsToolbarState();
+    }
+
+    async function loadCategories() {
+      try {
+        const categoriesRes = await fetch('/qbt/categories');
+        if (!categoriesRes.ok) return;
+        const data = await categoriesRes.json();
+        knownCategories = sortedUnique(Array.isArray(data.categories) ? data.categories : []);
+        if (finalCategoryCombo.dataset.open === 'true') {
+          openCategoryMenu({ showAll: !finalCategoryInput.value.trim() });
+        }
+      } catch (error) {}
+    }
+
+    async function loadCustomTags() {
+      try {
+        const tagsRes = await fetch('/qbt/tags');
+        if (!tagsRes.ok) throw new Error(await readErrorDetail(tagsRes));
+        const data = await tagsRes.json();
+        knownCustomTags = sortedUnique(Array.isArray(data.tags) ? data.tags : []);
+        if (customTagPicker.dataset.open === 'true') {
+          renderCustomTagMenu();
+        } else {
+          setCustomTagStatus(`${knownCustomTags.length} reusable tag${knownCustomTags.length === 1 ? '' : 's'} available; ${selectedCustomTags.length} selected.`);
+        }
+      } catch (error) {
+        setCustomTagStatus('Existing qBittorrent tags are unavailable; you can still type a new valid tag.', true);
+      }
+    }
+
+    async function loadKnownFinalPaths() {
+      try {
+        const pathsRes = await fetch('/qbt/final-path-suggestions');
+        if (!pathsRes.ok) return;
+        const data = await pathsRes.json();
+        knownFinalPaths = Array.isArray(data.paths) ? data.paths : [];
+      } catch (error) {}
+    }
+
+    async function loadQbtTransferInfo() {
+      if (!qbtTransferSummary) return;
+      try {
+        const transferRes = await fetch('/qbt/transfer');
+        if (!transferRes.ok) throw new Error(await readErrorDetail(transferRes));
+        const transfer = await transferRes.json();
+        const downSpeed = formatBytes(Number(transfer.dl_info_speed || 0));
+        const upSpeed = formatBytes(Number(transfer.up_info_speed || 0));
+        const downTotal = formatBytes(Number(transfer.dl_info_data || 0));
+        const upTotal = formatBytes(Number(transfer.up_info_data || 0));
+        const status = transfer.connection_status ? ` · ${transfer.connection_status}` : '';
+        qbtTransferSummary.textContent = `Down ${downSpeed}/s · Up ${upSpeed}/s · Session ${downTotal} down / ${upTotal} up${status}`;
+      } catch (error) {
+        qbtTransferSummary.textContent = 'Transfer status unavailable.';
+      }
+    }
+
+    async function loadFinalPathSuggestions(input = finalParentInput, listId = 'final-parent-suggestions') {
+      try {
+        const rawPrefix = input.value.trim();
+        const prefix = encodeURIComponent(rawPrefix);
+        const pathsRes = await fetch(`/fs/final-path-suggestions?prefix=${prefix}`);
+        if (!pathsRes.ok) return;
+        const data = await pathsRes.json();
+        const filesystemPaths = Array.isArray(data.paths) ? data.paths : [];
+        const loweredPrefix = rawPrefix.toLowerCase();
+        const filteredKnownPaths = knownFinalPaths.filter((path) => {
+          if (!loweredPrefix) return true;
+          return path.toLowerCase().startsWith(loweredPrefix);
+        });
+        const paths = Array.from(new Set([...filteredKnownPaths, ...filesystemPaths])).sort();
+        if (input.value.trim() === rawPrefix) replaceOptions(listId, paths);
+      } catch (error) {}
+    }
+
+    async function loadJobs({ silent = false } = {}) {
+      if (jobsRequestInFlight) return;
+      jobsRequestInFlight = true;
+      if (!silent) jobsMeta.textContent = 'Refreshing jobs...';
+
+      try {
+        const jobsRes = await fetch('/jobs');
+        if (!jobsRes.ok) throw new Error(`HTTP ${jobsRes.status}`);
+        latestJobs = await jobsRes.json();
+        pruneSelection();
+        renderJobs(latestJobs);
+        jobsMeta.textContent = `Auto-refreshing every 5s. Last updated ${new Date().toLocaleTimeString()}. Swipe sideways on narrow screens to view all columns.`;
+      } catch (error) {
+        jobsMeta.textContent = 'Job refresh failed. The existing table is still shown.';
+      } finally {
+        jobsRequestInFlight = false;
+      }
+    }
+
+    async function postJson(url, payload = {}) {
+      const res = await fetch(url, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      });
+      if (!res.ok) {
+        throw new Error(await readErrorDetail(res));
+      }
+      return res.json();
+    }
+
+    function dropSelection(jobIds) {
+      jobIds.forEach((jobId) => selectedJobIds.delete(jobId));
+    }
+
+    function formatBulkResult(actionLabel, result) {
+      const parts = [`${actionLabel}: ${result.processed || 0} processed`];
+      if (result.skipped) parts.push(`${result.skipped} skipped`);
+      if (result.failed) parts.push(`${result.failed} failed`);
+      return parts.join(', ') + '.';
+    }
+
+    async function runBulkAction({ url, payload = {}, confirmMessage = '', label }) {
+      if (confirmMessage && !confirm(confirmMessage)) return;
+      try {
+        const result = await postJson(url, payload);
+        dropSelection([...(result.processed_ids || []), ...(result.failed_ids || [])]);
+        await Promise.all([loadJobs({ silent: true }), loadScannerStatus()]);
+        flashJobsToolbarStatus(formatBulkResult(label, result), Boolean(result.failed));
+      } catch (error) {
+        flashJobsToolbarStatus(String(error), true);
+      }
+    }
+
+    function getSelectedJobIds() {
+      const displayedIds = new Set(getDisplayedJobs().map((job) => job.id));
+      return [...selectedJobIds].filter((jobId) => displayedIds.has(jobId));
+    }
+
+    stagingPreferenceSelect.addEventListener('change', () => {
+      const isNas = stagingPreferenceSelect.value === 'nas';
+      document.getElementById('nas-staging-field').hidden = !isNas;
+      nasStagingSelect.disabled = !isNas;
+    });
+
+    jobForm.addEventListener('submit', async (event) => {
+      event.preventDefault();
+      if (bulkSubmitting || singleSubmitting) return;
+      setFormStatus('');
+      submitButton.disabled = true;
+      closeCategoryMenu();
+
+      const parsed = parseMagnetInput(magnetInput.value);
+      const parseErrors = [];
+      if (parsed.invalidLines.length) parseErrors.push(`lines without a magnet: ${parsed.invalidLines.join(', ')}`);
+      if (parsed.invalidHashLines.length) parseErrors.push(`lines without a valid BTIH hash: ${parsed.invalidHashLines.join(', ')}`);
+      if (parsed.duplicateLines.length) parseErrors.push(`duplicate magnet lines: ${parsed.duplicateLines.join(', ')}`);
+      if (parseErrors.length) {
+        setFormStatus(`Fix bulk magnet input first (${parseErrors.join('; ')}).`, true);
+        submitButton.disabled = false;
+        return;
+      }
+      const items = [...parsed.magnets, ...selectedTorrentFiles.map(file => ({file}))];
+      if (items.length === 0) {
+        setFormStatus('Paste a magnet link or choose a .torrent file.', true);
+        submitButton.disabled = false;
+        return;
+      }
+      if (items.length > 50) {
+        setFormStatus(`Bulk intake supports up to 50 files and magnets combined; ${items.length} were selected.`, true);
+        submitButton.disabled = false;
+        return;
+      }
+
+      let formSettings;
+      try {
+        formSettings = getFormSettings();
+      } catch (error) {
+        setFormStatus(String(error), true);
+        customTagInput.focus();
+        submitButton.disabled = false;
+        return;
+      }
+      if (items.length > 1) {
+        openBulkDialog(items, formSettings);
+        submitButton.disabled = false;
+        return;
+      }
+
+      singleSubmitting = true;
+      torrentFileInput.disabled = true;
+      torrentFilesClear.disabled = true;
+      try {
+        await submitIntakeItem(items[0], formSettings);
+        magnetInput.value = '';
+        selectedTorrentFiles = [];
+        updateTorrentFileSelection();
+        magnetInput.focus();
+        knownCustomTags = sortedUnique([...knownCustomTags, ...selectedCustomTags]);
+        setFormStatus('Job submitted. The job table will continue updating automatically.');
+        await loadJobs();
+      } catch (error) {
+        setFormStatus(String(error), true);
+      } finally {
+        singleSubmitting = false;
+        torrentFileInput.disabled = false;
+        torrentFilesClear.disabled = false;
+        submitButton.disabled = false;
+      }
+    });
+
+    bulkUseSameSettings.addEventListener('change', syncBulkSettingsMode);
+    bulkDialogSubmit.addEventListener('click', submitBulkDialog);
+    bulkDialogClose.addEventListener('click', closeBulkDialog);
+    bulkDialogCancel.addEventListener('click', closeBulkDialog);
+    bulkDialog.addEventListener('click', (event) => {
+      if (event.target === bulkDialog) closeBulkDialog();
+    });
+    document.addEventListener('keydown', (event) => {
+      if (event.key !== 'Escape') return;
+      if (!settingsDialog.hidden) {
+        closeSettingsDialog();
+        return;
+      }
+      if (!bulkDialog.hidden) closeBulkDialog();
+    });
+
+    settingsOpenButton.addEventListener('click', openSettingsDialog);
+    settingsCloseButton.addEventListener('click', closeSettingsDialog);
+    settingsSearch.addEventListener('input', filterSettings);
+    settingsDialog.addEventListener('click', (event) => {
+      if (event.target === settingsDialog) closeSettingsDialog();
+    });
+    settingsDrawer.addEventListener('click', (event) => event.stopPropagation());
+    settingsRuntimeControlsButton.addEventListener('click', () => {
+      closeSettingsDialog();
+      scannerStatusCard.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      scannerSlotsSelect.focus({ preventScroll: true });
+    });
+
+    finalParentInput.addEventListener('input', () => {
+      if (finalPathTimer) clearTimeout(finalPathTimer);
+      finalPathTimer = setTimeout(loadFinalPathSuggestions, 140);
+    });
+    finalParentInput.addEventListener('focus', () => loadFinalPathSuggestions());
+    finalDestinationForm.addEventListener('submit', saveFinalDestination);
+    finalDestinationCancel.addEventListener('click', () => finalDestinationDialog.close());
+    finalDestinationDialog.addEventListener('cancel', event => {
+      if (finalDestinationSaving) event.preventDefault();
+    });
+    finalDestinationDialog.addEventListener('close', () => {
+      const jobId = editingFinalDestination?.id;
+      editingFinalDestination = null;
+      if (editFinalPathTimer) clearTimeout(editFinalPathTimer);
+      const button = [...jobsTbody.querySelectorAll('[data-edit-final-destination]')].find(node => node.dataset.editFinalDestination === jobId);
+      (button || refreshJobsButton).focus({preventScroll: true});
+    });
+    editFinalParentInput.addEventListener('input', () => {
+      if (editFinalPathTimer) clearTimeout(editFinalPathTimer);
+      editFinalPathTimer = setTimeout(() => loadFinalPathSuggestions(editFinalParentInput, 'edit-final-parent-suggestions'), 140);
+    });
+    finalCategoryInput.addEventListener('focus', () => openCategoryMenu({ showAll: !finalCategoryInput.value.trim() }));
+    finalCategoryInput.addEventListener('input', () => openCategoryMenu());
+    finalCategoryInput.addEventListener('keydown', (event) => {
+      if (event.key === 'Escape') {
+        closeCategoryMenu();
+      }
+    });
+    finalCategoryInput.addEventListener('blur', () => {
+      window.setTimeout(() => {
+        if (!finalCategoryCombo.contains(document.activeElement)) {
+          closeCategoryMenu();
+        }
+      }, 0);
+    });
+    finalCategoryToggle.addEventListener('click', () => {
+      if (finalCategoryCombo.dataset.open === 'true') {
+        closeCategoryMenu();
+        return;
+      }
+      openCategoryMenu({ showAll: true });
+      finalCategoryInput.focus();
+    });
+    customTagInput.addEventListener('focus', () => renderCustomTagMenu({ showAll: !customTagInput.value.trim() }));
+    customTagInput.addEventListener('input', () => renderCustomTagMenu());
+    customTagInput.addEventListener('keydown', (event) => {
+      if (event.key === 'ArrowDown') {
+        event.preventDefault();
+        if (customTagPicker.dataset.open !== 'true') {
+          renderCustomTagMenu();
+        } else {
+          setActiveTagOption(activeTagOptionIndex + 1);
+        }
+        return;
+      }
+      if (event.key === 'ArrowUp') {
+        event.preventDefault();
+        if (customTagPicker.dataset.open !== 'true') {
+          renderCustomTagMenu();
+          setActiveTagOption(tagMenuOptions.length - 1);
+        } else {
+          setActiveTagOption(activeTagOptionIndex - 1);
+        }
+        return;
+      }
+      if (event.key === 'Enter') {
+        event.preventDefault();
+        const active = tagMenuOptions[activeTagOptionIndex];
+        addSelectedCustomTag(active ? active.value : customTagInput.value);
+        return;
+      }
+      if (event.key === 'Escape') {
+        event.preventDefault();
+        closeCustomTagMenu();
+        return;
+      }
+      if (event.key === 'Backspace' && !customTagInput.value && selectedCustomTags.length) {
+        const removed = selectedCustomTags.pop();
+        renderSelectedCustomTags();
+        renderCustomTagMenu({ showAll: true });
+        setCustomTagStatus(`Removed “${removed}”. ${selectedCustomTags.length} of ${maxCustomTags} tags selected.`);
+      }
+    });
+    customTagInput.addEventListener('blur', () => {
+      window.setTimeout(() => {
+        if (!customTagPicker.contains(document.activeElement)) closeCustomTagMenu();
+      }, 0);
+    });
+    customTagAddButton.addEventListener('click', () => {
+      if (customTagInput.value.trim()) {
+        addSelectedCustomTag(customTagInput.value);
+      } else {
+        renderCustomTagMenu({ showAll: true });
+      }
+      customTagInput.focus();
+    });
+    document.addEventListener('click', (event) => {
+      if (!finalCategoryCombo.contains(event.target)) {
+        closeCategoryMenu();
+      }
+      if (!customTagPicker.contains(event.target)) {
+        closeCustomTagMenu();
+      }
+    });
+    refreshJobsButton.addEventListener('click', () => {
+      loadJobs();
+      loadScannerStatus();
+      loadCustomTags();
+    });
+    scannerSlotsSelect.addEventListener('change', updateScannerSlots);
+    scannerMaintenanceButton.addEventListener('click', updateScannerMaintenance);
+    jobsSortSelect.addEventListener('change', () => {
+      jobsSortOrder = jobsSortSelect.value;
+      renderJobs(latestJobs);
+    });
+    jobsFilterSelect.addEventListener('change', () => {
+      jobsFilter = jobsFilterSelect.value;
+      renderJobs(latestJobs);
+    });
+    selectAllJobsCheckbox.addEventListener('change', () => {
+      const displayedJobs = getDisplayedJobs();
+      if (selectAllJobsCheckbox.checked) {
+        displayedJobs.forEach((job) => selectedJobIds.add(job.id));
+      } else {
+        displayedJobs.forEach((job) => selectedJobIds.delete(job.id));
+      }
+      renderJobs(latestJobs);
+    });
+    jobsTbody.addEventListener('change', (event) => {
+      const target = event.target;
+      if (!(target instanceof HTMLInputElement) || !target.classList.contains('job-checkbox')) return;
+      const { jobId } = target.dataset;
+      if (!jobId) return;
+      if (target.checked) {
+        selectedJobIds.add(jobId);
+      } else {
+        selectedJobIds.delete(jobId);
+      }
+      renderJobs(latestJobs);
+    });
+    jobsTbody.addEventListener('click', event => {
+      const button = event.target.closest('[data-edit-final-destination]');
+      if (button && jobsTbody.contains(button)) openFinalDestination(button);
+    });
+    retrySelectedButton.addEventListener('click', () => {
+      const jobIds = getSelectedJobIds();
+      if (jobIds.length === 0) return;
+      runBulkAction({
+        url: '/jobs/bulk-retry',
+        payload: { job_ids: jobIds },
+        label: 'Retry selected',
+      });
+    });
+    moveSelectedToNasButton.addEventListener('click', () => {
+      const jobIds = getSelectedJobIds();
+      if (jobIds.length === 0) return;
+      runBulkAction({
+        url: '/jobs/bulk-move-to-nas',
+        payload: { job_ids: jobIds, nas_staging_id: moveNasStagingSelect.value },
+        label: 'Use NAS staging',
+      });
+    });
+    scanNextButton.addEventListener('click', () => {
+      const jobIds = getSelectedJobIds();
+      if (jobIds.length === 0) return;
+      runBulkAction({
+        url: '/jobs/bulk-scan-next',
+        payload: { job_ids: jobIds },
+        label: 'Prioritize scan',
+      });
+    });
+    pauseScanButton.addEventListener('click', () => {
+      const jobIds = getSelectedJobIds();
+      if (jobIds.length === 0) return;
+      runBulkAction({
+        url: '/jobs/bulk-scan-pause',
+        payload: { job_ids: jobIds },
+        label: 'Pause scan',
+      });
+    });
+    resumeScanButton.addEventListener('click', () => {
+      const jobIds = getSelectedJobIds();
+      if (jobIds.length === 0) return;
+      runBulkAction({
+        url: '/jobs/bulk-scan-resume',
+        payload: { job_ids: jobIds },
+        label: 'Resume scan',
+      });
+    });
+    retryFailedButton.addEventListener('click', () => {
+      const failedIds = latestJobs.filter((job) => job.state === 'error').map((job) => job.id);
+      if (failedIds.length === 0) return;
+      runBulkAction({
+        url: '/jobs/bulk-retry',
+        payload: { job_ids: failedIds },
+        label: 'Retry all failed',
+      });
+    });
+    deleteSelectedButton.addEventListener('click', () => {
+      const jobIds = getSelectedJobIds();
+      if (jobIds.length === 0) return;
+      runBulkAction({
+        url: '/jobs/bulk-delete',
+        payload: { job_ids: jobIds },
+        confirmMessage: 'Forget selected jobs from Intake tracking only? This will not delete, stop, pause, or remove torrents in qBittorrent.',
+        label: 'Forget selected',
+      });
+    });
+    clearCompletedButton.addEventListener('click', () => {
+      runBulkAction({
+        url: '/jobs/clear-completed',
+        confirmMessage: 'Clear completed jobs from the intake history?',
+        label: 'Clear completed',
+      });
+    });
+    clearFailedButton.addEventListener('click', () => {
+      runBulkAction({
+        url: '/jobs/clear-failed',
+        confirmMessage: 'Clear failed jobs from the intake history?',
+        label: 'Clear failed',
+      });
+    });
+
+    syncHeroDetailsForViewport();
+    if (typeof mobileHeroMediaQuery.addEventListener === 'function') {
+      mobileHeroMediaQuery.addEventListener('change', syncHeroDetailsForViewport);
+    } else if (typeof mobileHeroMediaQuery.addListener === 'function') {
+      mobileHeroMediaQuery.addListener(syncHeroDetailsForViewport);
+    }
+
+    loadQbtTransferInfo();
+    loadScannerStatus();
+    Promise.all([loadCategories(), loadCustomTags(), loadKnownFinalPaths()]).then(() => {
+      loadFinalPathSuggestions();
+      loadJobs();
+      jobsRefreshTimer = setInterval(() => {
+        loadJobs({ silent: true });
+        loadScannerStatus();
+      }, 5000);
+    });
+    setInterval(loadQbtTransferInfo, 10000);
+  </script>
+</body>
+</html>

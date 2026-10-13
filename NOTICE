@@ -1,0 +1,18 @@
+qbittorent-intake
+
+This Rust implementation preserves the interface and behavior of the original
+torrent-intake project at https://github.com/Outlain/torrent-intake.
+Compatibility reference: commit 886d75a14f0d8b5663078a91bae4bd09c1336f94.
+This public upstream attribution is provenance, not deployment configuration.
+
+The project source is distributed under the MIT license in LICENSE.
+Third-party components retain their own licenses:
+
+- tests/fixtures/libarchive/COPYING covers the retained libarchive test fixtures.
+- Cargo.lock identifies the Rust dependencies; THIRD_PARTY_LICENSES.txt includes
+  their collected upstream notices. Each dependency retains its own license.
+- Container builds include the Rust toolchain's standard-library copyright and
+  license notice under /usr/share/doc/torrent-intake/.
+- Container operating-system packages retain their installed license notices
+  under /usr/share/doc. qBittorrent, ClamAV, FFmpeg, libarchive and rsync are
+  separate third-party programs or libraries, not relicensed by this project.
