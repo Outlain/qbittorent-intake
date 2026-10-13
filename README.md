@@ -120,7 +120,8 @@ steps, rollback limits and the tested upstream backup version.
 
 Linux is the deployment target, with `amd64` and `arm64` image builds. macOS is
 supported for development and controller tests. Windows deployment is not
-implemented. Install Rust 1.90 or newer:
+implemented. Install Rust through rustup; `rust-toolchain.toml` selects Rust
+1.90.0 and its matching formatter and Clippy, the same versions used in CI:
 
 ```sh
 cargo build --release --locked

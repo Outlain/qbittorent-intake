@@ -16,7 +16,8 @@ stage="$work/qbittorent-intake"
 mkdir "$stage"
 cd "$source_root"
 # Deliberately enumerate roots: never archive the entire working directory.
-for file in Cargo.toml Cargo.lock Dockerfile Dockerfile.clamd Dockerfile.qbt-tests \
+for file in Cargo.toml Cargo.lock rust-toolchain.toml \
+    Dockerfile Dockerfile.clamd Dockerfile.qbt-tests \
     README.md CONFIGURATION.md LICENSE NOTICE THIRD_PARTY_LICENSES.txt \
     .gitignore .dockerignore .env.example \
     docker-compose.example.yml portainer-stack.example.yml; do

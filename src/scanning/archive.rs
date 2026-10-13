@@ -100,7 +100,10 @@ fn available_bytes(path: &Path) -> Result<u64, ScanError> {
     if unsafe { libc::statvfs(path.as_ptr(), &mut info) } < 0 {
         return Err(io::Error::last_os_error().into());
     }
-    Ok((info.f_bavail as u64).saturating_mul(info.f_frsize as u64))
+    // libc uses u32 for this field on macOS and u64 on 64-bit Linux.
+    #[cfg_attr(target_os = "linux", allow(clippy::useless_conversion))]
+    let available_blocks = u64::from(info.f_bavail);
+    Ok(available_blocks.saturating_mul(info.f_frsize))
 }
 fn private_owned(path: &Path, directory: bool) -> Result<(), ScanError> {
     let m = std::fs::symlink_metadata(path)?;
@@ -382,6 +385,9 @@ struct Extractor {
 }
 impl Extractor {
     fn extract(&mut self, file: &mut File, depth: u64, parents: &str) -> Result<(), ScanError> {
+        // libc mode constants are u16 on macOS and u32 on Linux; libarchive uses u32.
+        #[cfg_attr(target_os = "linux", allow(clippy::useless_conversion))]
+        let (regular_kind, directory_kind) = (u32::from(libc::S_IFREG), u32::from(libc::S_IFDIR));
         if depth > self.limits.depth {
             return Err(blocked("archive nesting depth exceeds policy"));
         }
@@ -403,7 +409,7 @@ impl Extractor {
             };
             if entry.encrypted
                 || entry.link
-                || ![libc::S_IFREG as u32, libc::S_IFDIR as u32].contains(&entry.kind)
+                || ![regular_kind, directory_kind].contains(&entry.kind)
             {
                 return Err(blocked(
                     "archive contains encryption, links or special files",
@@ -429,7 +435,7 @@ impl Extractor {
             if size > self.limits.expanded_bytes.saturating_sub(self.expanded) {
                 return Err(blocked("archive expanded-byte budget exceeded"));
             }
-            if entry.kind == libc::S_IFDIR as u32 {
+            if entry.kind == directory_kind {
                 if size > 0 || declared.is_some_and(|d| d.packed > 0) {
                     return Err(blocked("archive directory contains hidden payload"));
                 }

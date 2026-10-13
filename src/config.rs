@@ -87,12 +87,12 @@ fn draft_integer(value: &Value) -> Option<u64> {
         return None;
     }
     for (index, byte) in bytes.iter().enumerate() {
-        if !byte.is_ascii_digit()
-            && !(*byte == b'_'
+        if !(byte.is_ascii_digit()
+            || (*byte == b'_'
                 && index > 0
                 && index + 1 < bytes.len()
                 && bytes[index - 1].is_ascii_digit()
-                && bytes[index + 1].is_ascii_digit())
+                && bytes[index + 1].is_ascii_digit()))
         {
             return None;
         }

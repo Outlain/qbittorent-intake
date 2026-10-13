@@ -6,8 +6,9 @@ image contains ClamAV and its Rust supervisor. Both run as UID/GID `10001`; neit
 image requires Python. Both include `LICENSE`, `NOTICE`,
 `THIRD_PARTY_LICENSES.txt` and the Rust standard library's notice under
 `/usr/share/doc/torrent-intake/`. Rust `1.90` is the supported minimum and the
-Docker build version. `Cargo.lock` is committed and every release build uses
-`--locked`.
+Docker build version. The committed `rust-toolchain.toml` selects `1.90.0`,
+rustfmt and Clippy for local rustup commands, so local checks match CI.
+`Cargo.lock` is committed and every release build uses `--locked`.
 
 ## Image names and tags
 
@@ -60,7 +61,8 @@ manifest; the functional tests run on native hardware.
 
 ## Local validation
 
-From the repository root:
+From the repository root (ordinary `cargo` commands also follow the committed
+toolchain pin through rustup):
 
 ```sh
 rustup toolchain install 1.90.0 --profile minimal --component rustfmt --component clippy
